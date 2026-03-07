@@ -3,7 +3,11 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
+<<<<<<< Updated upstream
 -- Generation Time: Mar 05, 2026 at 02:19 PM
+=======
+-- Generation Time: Mar 07, 2026 at 08:55 AM
+>>>>>>> Stashed changes
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
