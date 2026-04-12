@@ -1,4 +1,3 @@
-import { error } from "node:console";
 import { crearCita, getCitasCliente } from "../services/citas.service.js";
 import { Request, Response } from "express";
 
