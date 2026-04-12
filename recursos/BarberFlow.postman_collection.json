@@ -1,0 +1,679 @@
+{
+  "info": {
+    "name": "BarberFlow API",
+    "description": "Colección completa de endpoints de la API REST de BarberFlow.\n\nBase URL: http://localhost:3000\nAutenticación: Bearer Token (JWT)\nFormato: JSON\nFechas: ISO 8601 (YYYY-MM-DDTHH:mm:ss)\n\nFlujo de uso:\n1. Registrarse con POST /api/auth/register\n2. Hacer login con POST /api/auth/login → copiar el token\n3. Pegar el token en la variable de entorno {{token}}\n4. Usar el resto de endpoints",
+    "_postman_id": "barberflow-api-v1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string",
+      "description": "URL base del servidor de desarrollo"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string",
+      "description": "JWT obtenido en POST /api/auth/login. Pégalo aquí después de hacer login."
+    }
+  ],
+  "item": [
+    {
+      "name": "🔧 Health Check",
+      "item": [
+        {
+          "name": "GET /api/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Comprueba que el servidor está arrancado y respondiendo."
+          },
+          "response": [
+            {
+              "name": "200 OK – Servidor funcionando",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Servidor funcionando\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🔐 Auth",
+      "item": [
+        {
+          "name": "POST /api/auth/register",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Juan García\",\n  \"email\": \"juan@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Registra un nuevo usuario con rol 'cliente' por defecto.\n\nCampos requeridos:\n- nombre: string\n- email: string único\n- password: string (se hashea con bcrypt)"
+          },
+          "response": [
+            {
+              "name": "201 Created – Registro correcto",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 1,\n    \"nombre\": \"Juan García\",\n    \"email\": \"juan@example.com\",\n    \"rol\": \"cliente\"\n  }\n}"
+            },
+            {
+              "name": "409 Conflict – Email duplicado",
+              "status": "Conflict",
+              "code": 409,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"El email ya está registrado\"\n}"
+            },
+            {
+              "name": "400 Bad Request – Campos faltantes",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Nombre, email y password son obligatorios\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.success && res.data.token) {",
+                  "  pm.collectionVariables.set('token', res.data.token);",
+                  "  console.log('Token guardado automáticamente en la variable {{token}}');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"juan@example.com\",\n  \"password\": \"password123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login de usuario. Devuelve JWT + rol + usuario_id + barbero_id.\n\nEl script de Tests guarda el token automáticamente en la variable {{token}} de la colección.\n\nbarbero_id: número si el usuario tiene perfil de barbero vinculado, null si no."
+          },
+          "response": [
+            {
+              "name": "200 OK – Login correcto (cliente)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"rol\": \"cliente\",\n    \"usuario_id\": 1,\n    \"barbero_id\": null\n  }\n}"
+            },
+            {
+              "name": "200 OK – Login correcto (admin-barbero)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"rol\": \"admin\",\n    \"usuario_id\": 2,\n    \"barbero_id\": 1\n  }\n}"
+            },
+            {
+              "name": "401 Unauthorized – Credenciales incorrectas",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Credenciales incorrectas\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "💈 Barberos",
+      "item": [
+        {
+          "name": "GET /api/barberos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/barberos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "barberos"]
+            },
+            "description": "Lista todos los barberos con activo=1. Ruta pública, no requiere token.\n\nUsada por el wizard de reservas del frontend."
+          },
+          "response": [
+            {
+              "name": "200 OK – Lista de barberos activos",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"nombre\": \"Carlos Ruiz\",\n      \"especialidad\": \"Degradados y diseños\"\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"Javi Moreno\",\n      \"especialidad\": \"Barba y afeitado clásico\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/barberos  [Admin]",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Miguel Torres\",\n  \"especialidad\": \"Corte clásico\",\n  \"usuario_id\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/barberos",
+              "host": ["{{base_url}}"],
+              "path": ["api", "barberos"]
+            },
+            "description": "Crea un nuevo barbero. Solo admin.\n\nusuario_id: ID de usuario existente para vincular cuenta, o null si el barbero no tiene app login."
+          },
+          "response": [
+            {
+              "name": "201 Created – Barbero creado",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 3,\n    \"nombre\": \"Miguel Torres\",\n    \"especialidad\": \"Corte clásico\",\n    \"activo\": 1,\n    \"usuario_id\": null\n  }\n}"
+            },
+            {
+              "name": "403 Forbidden – No es admin",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Acceso denegado: se requiere rol admin\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /api/barberos/:id  [Admin]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"activo\": 0\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/barberos/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "barberos", "1"]
+            },
+            "description": "Soft-delete: pone activo=0 en lugar de eliminar el registro. Preserva el historial de citas del barbero."
+          },
+          "response": [
+            {
+              "name": "200 OK – Barbero desactivado",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"mensaje\": \"Barbero actualizado correctamente\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found – Barbero no existe",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Barbero no encontrado\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "✂️ Servicios",
+      "item": [
+        {
+          "name": "GET /api/servicios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/servicios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "servicios"]
+            },
+            "description": "Catálogo completo de servicios. Ruta pública.\n\nEl campo 'duracion' (en minutos) es clave: el backend lo usa para calcular fecha_hora_fin."
+          },
+          "response": [
+            {
+              "name": "200 OK – Catálogo de servicios",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"nombre\": \"Corte de pelo\",\n      \"precio\": \"12.00\",\n      \"duracion\": 30\n    },\n    {\n      \"id\": 2,\n      \"nombre\": \"Corte + barba\",\n      \"precio\": \"18.00\",\n      \"duracion\": 45\n    },\n    {\n      \"id\": 3,\n      \"nombre\": \"Afeitado clásico\",\n      \"precio\": \"15.00\",\n      \"duracion\": 35\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST /api/servicios  [Admin]",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Degradado\",\n  \"precio\": 14.00,\n  \"duracion\": 40\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/servicios",
+              "host": ["{{base_url}}"],
+              "path": ["api", "servicios"]
+            },
+            "description": "Crea un nuevo servicio. Solo admin.\n\nprecio: DECIMAL — importante para precisión monetaria.\nduracion: entero en minutos — determina cuánto bloquea la agenda del barbero."
+          },
+          "response": [
+            {
+              "name": "201 Created – Servicio creado",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 4,\n    \"nombre\": \"Degradado\",\n    \"precio\": \"14.00\",\n    \"duracion\": 40\n  }\n}"
+            },
+            {
+              "name": "403 Forbidden – No es admin",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Acceso denegado: se requiere rol admin\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📅 Citas",
+      "item": [
+        {
+          "name": "POST /api/citas  [Cliente/Admin]",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"usuario_id\": 1,\n  \"barbero_id\": 2,\n  \"servicio_id\": 1,\n  \"fecha_hora\": \"2026-04-20T10:00:00\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/citas",
+              "host": ["{{base_url}}"],
+              "path": ["api", "citas"]
+            },
+            "description": "Crea una nueva cita. Requiere JWT.\n\nValidaciones en backend (por orden):\n1. Campos requeridos presentes\n2. fecha_hora > ahora (fecha futura)\n3. Hora dentro del horario de la barbería (10:00–21:00)\n4. Barbero activo (activo=1)\n5. Anti-solapamiento: ninguna cita activa del mismo barbero en esa franja\n\nfecha_hora_fin se calcula en backend: fecha_hora + duracion del servicio.\nFormato obligatorio: YYYY-MM-DDTHH:mm:ss"
+          },
+          "response": [
+            {
+              "name": "201 Created – Cita creada",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 5,\n    \"fecha_hora\": \"2026-04-20T10:00:00\",\n    \"fecha_hora_fin\": \"2026-04-20T10:30:00\",\n    \"estado\": \"pendiente\",\n    \"usuario_id\": 1,\n    \"barbero_id\": 2,\n    \"servicio_id\": 1\n  }\n}"
+            },
+            {
+              "name": "409 Conflict – Solapamiento de horario",
+              "status": "Conflict",
+              "code": 409,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"El barbero no está disponible en ese horario\"\n}"
+            },
+            {
+              "name": "400 Bad Request – Fecha pasada",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"La fecha de la cita debe ser futura\"\n}"
+            },
+            {
+              "name": "400 Bad Request – Fuera de horario (antes 10:00 o después de 21:00)",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"La barbería abre de 10:00 a 21:00\"\n}"
+            },
+            {
+              "name": "400 Bad Request – Campos faltantes",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Todos los campos son obligatorios\"\n}"
+            },
+            {
+              "name": "401 Unauthorized – Sin token",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Token no proporcionado\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/citas/:usuario_id  [JWT propio]",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/citas/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "citas", "1"]
+            },
+            "description": "Historial de citas de un cliente. El usuario solo puede ver las suyas propias.\n\nEl backend valida que usuario_id del parámetro coincide con el del JWT.\nDevuelve JOIN con nombre del barbero y nombre del servicio (no solo IDs).\nOrdenado por fecha_hora DESC (más reciente primero)."
+          },
+          "response": [
+            {
+              "name": "200 OK – Historial de citas",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 5,\n      \"fecha_hora\": \"2026-04-20T10:00:00\",\n      \"fecha_hora_fin\": \"2026-04-20T10:30:00\",\n      \"estado\": \"pendiente\",\n      \"barbero_nombre\": \"Carlos Ruiz\",\n      \"servicio_nombre\": \"Corte de pelo\",\n      \"precio\": \"12.00\"\n    },\n    {\n      \"id\": 3,\n      \"fecha_hora\": \"2026-04-10T16:00:00\",\n      \"fecha_hora_fin\": \"2026-04-10T16:45:00\",\n      \"estado\": \"completada\",\n      \"barbero_nombre\": \"Javi Moreno\",\n      \"servicio_nombre\": \"Corte + barba\",\n      \"precio\": \"18.00\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "403 Forbidden – Intentando ver citas de otro usuario",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"No tienes permiso para ver estas citas\"\n}"
+            },
+            {
+              "name": "404 Not Found – Usuario no existe",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Usuario no encontrado\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/citas/barbero/:id  [Barbero]",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/citas/barbero/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "citas", "barbero", "1"]
+            },
+            "description": "Citas propias del barbero autenticado. Solo puede ver las suyas.\n\nEl backend valida que el barbero_id del parámetro coincide con el del JWT."
+          },
+          "response": [
+            {
+              "name": "200 OK – Citas del barbero",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 5,\n      \"fecha_hora\": \"2026-04-20T10:00:00\",\n      \"fecha_hora_fin\": \"2026-04-20T10:30:00\",\n      \"estado\": \"pendiente\",\n      \"cliente_nombre\": \"Juan García\",\n      \"servicio_nombre\": \"Corte de pelo\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "403 Forbidden – Intentando ver citas de otro barbero",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"No tienes permiso para ver estas citas\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET /api/citas  [Admin]",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/citas",
+              "host": ["{{base_url}}"],
+              "path": ["api", "citas"]
+            },
+            "description": "Todas las citas del sistema. Solo admin.\n\nVista global para gestión y resolución de conflictos."
+          },
+          "response": [
+            {
+              "name": "200 OK – Todas las citas",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 5,\n      \"fecha_hora\": \"2026-04-20T10:00:00\",\n      \"fecha_hora_fin\": \"2026-04-20T10:30:00\",\n      \"estado\": \"pendiente\",\n      \"cliente_nombre\": \"Juan García\",\n      \"barbero_nombre\": \"Carlos Ruiz\",\n      \"servicio_nombre\": \"Corte de pelo\",\n      \"precio\": \"12.00\"\n    }\n  ]\n}"
+            },
+            {
+              "name": "403 Forbidden – No es admin",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Acceso denegado: se requiere rol admin\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /api/citas/:id/estado  [Admin]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"confirmada\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/citas/5/estado",
+              "host": ["{{base_url}}"],
+              "path": ["api", "citas", "5", "estado"]
+            },
+            "description": "Cambia el estado de una cita. Solo admin.\n\nEstados válidos: pendiente → confirmada → completada → cancelada\nSi el nuevo estado es 'confirmada': se dispara automáticamente el email de confirmación al cliente (Nodemailer).\n\n⚠️ El envío de email es interno al backend, no se expone como endpoint separado."
+          },
+          "response": [
+            {
+              "name": "200 OK – Estado cambiado (+ email si confirmada)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"mensaje\": \"Estado actualizado correctamente\",\n    \"email_enviado\": true\n  }\n}"
+            },
+            {
+              "name": "200 OK – Estado cambiado sin email (no es confirmada)",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"mensaje\": \"Estado actualizado correctamente\",\n    \"email_enviado\": false\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request – Estado no válido",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Estado no válido. Valores aceptados: pendiente, confirmada, completada, cancelada\"\n}"
+            },
+            {
+              "name": "404 Not Found – Cita no existe",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Cita no encontrada\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "🚶 Walk-ins",
+      "item": [
+        {
+          "name": "POST /api/walkins  [Admin/Barbero]",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Pedro (sin cita)\",\n  \"barberos_id\": 1\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/walkins",
+              "host": ["{{base_url}}"],
+              "path": ["api", "walkins"]
+            },
+            "description": "Registra un cliente walk-in en la cola. Solo admin o barbero.\n\nnombre: obligatorio (lo introduce el barbero manualmente)\nbarberos_id: opcional — barbero preferido. Si es null, cualquier barbero disponible.\nhora_llegada: se asigna automáticamente en backend (CURRENT_TIMESTAMP)\nestado inicial: 'esperando'"
+          },
+          "response": [
+            {
+              "name": "201 Created – Walk-in registrado",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 3,\n    \"nombre\": \"Pedro (sin cita)\",\n    \"barberos_id\": 1,\n    \"hora_llegada\": \"2026-04-12T11:30:00\",\n    \"estado\": \"esperando\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request – Sin nombre",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"El nombre del cliente es obligatorio\"\n}"
+            },
+            {
+              "name": "403 Forbidden – Cliente intentando registrar walk-in",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Acceso denegado: se requiere rol admin o barbero\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "PATCH /api/walkins/:id/estado  [Admin/Barbero]",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"atendiendo\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/api/walkins/3/estado",
+              "host": ["{{base_url}}"],
+              "path": ["api", "walkins", "3", "estado"]
+            },
+            "description": "Cambia el estado de un walk-in.\n\nEstados válidos: esperando → atendiendo → completado → cancelado\nEl barbero solo puede cambiar el estado de sus propios walk-ins.\nEl admin puede cambiar el estado de cualquier walk-in."
+          },
+          "response": [
+            {
+              "name": "200 OK – Estado actualizado",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"mensaje\": \"Estado del walk-in actualizado\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request – Estado no válido",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Estado no válido. Valores aceptados: esperando, atendiendo, completado, cancelado\"\n}"
+            },
+            {
+              "name": "403 Forbidden – Barbero intentando cambiar walk-in de otro barbero",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"No tienes permiso para modificar este walk-in\"\n}"
+            },
+            {
+              "name": "404 Not Found – Walk-in no existe",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Walk-in no encontrado\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "📊 Panel en vivo",
+      "item": [
+        {
+          "name": "GET /api/panel/hoy  [Admin/Barbero]",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/panel/hoy",
+              "host": ["{{base_url}}"],
+              "path": ["api", "panel", "hoy"]
+            },
+            "description": "Resumen operativo en tiempo real. El frontend hace polling a este endpoint cada 30 segundos.\n\nDevuelve:\n- Citas activas del día\n- Walk-ins en espera\n- Total personas\n- Tiempo estimado de espera\n- Estado de cada barbero (libre/ocupado + cuándo queda libre)\n- Lista de próximas citas\n- Cola de walk-ins"
+          },
+          "response": [
+            {
+              "name": "200 OK – Panel en vivo",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"citas_activas\": 2,\n    \"walkins_espera\": 1,\n    \"total_personas\": 3,\n    \"tiempo_espera_estimado_min\": 25,\n    \"barberos\": [\n      {\n        \"id\": 1,\n        \"nombre\": \"Carlos Ruiz\",\n        \"estado\": \"ocupado\",\n        \"libre_en\": \"10:45\"\n      },\n      {\n        \"id\": 2,\n        \"nombre\": \"Javi Moreno\",\n        \"estado\": \"libre\",\n        \"libre_en\": null\n      }\n    ],\n    \"proximas_citas\": [\n      {\n        \"id\": 5,\n        \"cliente_nombre\": \"Juan García\",\n        \"barbero_nombre\": \"Carlos Ruiz\",\n        \"servicio_nombre\": \"Corte de pelo\",\n        \"fecha_hora\": \"2026-04-12T11:00:00\"\n      }\n    ],\n    \"walkins_cola\": [\n      {\n        \"id\": 3,\n        \"nombre\": \"Pedro (sin cita)\",\n        \"hora_llegada\": \"2026-04-12T10:30:00\",\n        \"estado\": \"esperando\"\n      }\n    ]\n  }\n}"
+            },
+            {
+              "name": "403 Forbidden – Es cliente (sin acceso al panel)",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": false,\n  \"error\": \"Acceso denegado: se requiere rol admin o barbero\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
