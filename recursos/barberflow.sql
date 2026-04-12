@@ -2,8 +2,8 @@
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Host: localhost:3306
--- Generation Time: Mar 07, 2026 at 11:01 AM
+-- Host: 127.0.0.1:3306
+-- Generation Time: Apr 12, 2026 at 08:51 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -32,8 +32,17 @@ CREATE TABLE `barberos` (
   `nombre` varchar(100) NOT NULL,
   `especialidad` varchar(100) DEFAULT NULL,
   `activo` tinyint(1) DEFAULT '1',
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `usuario_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `barberos`
+--
+
+INSERT INTO `barberos` (`id`, `nombre`, `especialidad`, `activo`, `created_at`, `usuario_id`) VALUES
+(1, 'Carlos', 'Corte clásico', 1, '2026-04-12 08:29:53', NULL),
+(2, 'Javi', 'Barba y perfilado', 1, '2026-04-12 08:29:53', NULL);
 
 -- --------------------------------------------------------
 
@@ -52,6 +61,13 @@ CREATE TABLE `citas` (
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
+--
+-- Dumping data for table `citas`
+--
+
+INSERT INTO `citas` (`id`, `fecha_hora`, `fecha_hora_fin`, `estado`, `usuarios_id`, `barberos_id`, `servicios_id`, `created_at`) VALUES
+(1, '2026-04-20 10:00:00', '2026-04-20 10:30:00', 'pendiente', 1, 1, 1, '2026-04-12 08:30:11');
+
 -- --------------------------------------------------------
 
 --
@@ -65,6 +81,15 @@ CREATE TABLE `servicios` (
   `duracion` int NOT NULL,
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `servicios`
+--
+
+INSERT INTO `servicios` (`id`, `nombre`, `precio`, `duracion`, `created_at`) VALUES
+(1, 'Corte de pelo', 15.00, 30, '2026-04-12 08:29:53'),
+(2, 'Corte y barba', 25.00, 45, '2026-04-12 08:29:53'),
+(3, 'Afeitado', 10.00, 20, '2026-04-12 08:29:53');
 
 -- --------------------------------------------------------
 
@@ -81,6 +106,13 @@ CREATE TABLE `usuarios` (
   `rol` enum('admin','barbero','cliente') DEFAULT 'cliente',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `usuarios`
+--
+
+INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `rol`, `created_at`) VALUES
+(1, 'Alex', 'alex@gmail.com', '$2b$10$efFAO2oqFJuItHjw15wWNeYJLURojtq5IW124K6RhXER1F0dz3SlK', NULL, 'cliente', '2026-03-21 20:37:17');
 
 -- --------------------------------------------------------
 
@@ -105,7 +137,8 @@ CREATE TABLE `walkins` (
 -- Indexes for table `barberos`
 --
 ALTER TABLE `barberos`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `uq_barberos_usuario_id` (`usuario_id`);
 
 --
 -- Indexes for table `citas`
@@ -144,25 +177,25 @@ ALTER TABLE `walkins`
 -- AUTO_INCREMENT for table `barberos`
 --
 ALTER TABLE `barberos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT for table `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `servicios`
 --
 ALTER TABLE `servicios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `walkins`
@@ -173,6 +206,12 @@ ALTER TABLE `walkins`
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `barberos`
+--
+ALTER TABLE `barberos`
+  ADD CONSTRAINT `fk_barberos_usuarios` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `citas`
