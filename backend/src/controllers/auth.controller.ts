@@ -21,7 +21,7 @@ export const register = async (req: Request, res: Response) => {
         .json({ success: false, error: "El email ya está registrado" });
     }
 
-    // Hasheo la password antes de guardarla, nunca en texto plano
+    // Hasheo la password antes de guardarla
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Inserto el usuario nuevo con rol cliente por defecto
