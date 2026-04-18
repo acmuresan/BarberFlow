@@ -672,6 +672,35 @@
               "body": "{\n  \"success\": false,\n  \"error\": \"Acceso denegado: se requiere rol admin o barbero\"\n}"
             }
           ]
+        },
+        {
+          "name": "GET /api/panel/publico  [Público]",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/panel/publico",
+              "host": ["{{base_url}}"],
+              "path": ["api", "panel", "publico"]
+            },
+            "description": "Panel público sin autenticación. Cualquier visitante puede verlo sin JWT.\n\nDevuelve únicamente:\n- total_personas: citas activas del día + walk-ins en espera\n- tiempo_espera_estimado_min: estimación en minutos (null si no hay datos suficientes)\n\nUsado por el panel de pantalla en la barbería (TV de sala de espera) y por clientes que quieren saber si hay cola antes de ir."
+          },
+          "response": [
+            {
+              "name": "200 OK – Panel público",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"total_personas\": 3,\n    \"tiempo_espera_estimado_min\": 25\n  }\n}"
+            },
+            {
+              "name": "200 OK – Sin nadie esperando",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"total_personas\": 0,\n    \"tiempo_espera_estimado_min\": null\n  }\n}"
+            }
+          ]
         }
       ]
     }
