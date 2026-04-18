@@ -73,6 +73,16 @@ export async function crearCita(
       return { error: "El servicio no se ha encontrado.", status: 404 };
     }
 
+    // Comprobamos que el barbero existe y está activo
+    const [barberos] = await pool.execute<RowDataPacket[]>(
+      "SELECT id FROM barberos WHERE id = ? AND activo = 1",
+      [barbero_id],
+    );
+
+    if (barberos.length === 0) {
+      return { error: "El barbero no está disponible", status: 400 };
+    }
+
     // Calculamos cuando termina la cita sumando la duración al inicio
     const fecha_hora_fin = calcularFechaFin(fecha_hora, servicio[0].duracion);
 
