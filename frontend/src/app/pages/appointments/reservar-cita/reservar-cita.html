@@ -1,0 +1,112 @@
+<div class="wizard-container">
+  <h1 class="text-2xl font-bold mb-4">Nueva Cita</h1>
+
+  <div class="progress-container">
+    <div class="progress-bar" [style.width.%]="(pasoActual / totalPasos) * 100"></div>
+    <p class="text-sm mt-2">Paso {{ pasoActual }} de {{ totalPasos }}</p>
+  </div>
+
+  <!--PASO 1: SELECCIÓN DE SERVICIO -->
+  <div *ngIf="pasoActual === 1" class="step-content">
+    <h2 class="text-xl mb-4">Selecciona un servicio</h2>
+    <div class="grid-list">
+      <div
+        *ngFor="let s of servicios"
+        (click)="seleccionarServicio(s)"
+        [class.selected]="servicioSeleccionado?.id === s.id"
+        class="card"
+      >
+        <span class="font-bold">{{ s.nombre }}</span>
+        <span class="price">{{ s.precio }}€</span>
+      </div>
+    </div>
+
+    <button class="btn-next" [disabled]="!servicioSeleccionado" (click)="irSiguiente()">
+      Siguiente: Elegir Barbero
+    </button>
+  </div>
+
+  <!--PASO 2: SELECCIÓN DE BARBERO -->
+  <div *ngIf="pasoActual === 2" class="step-content">
+    <h2 class="text-xl mb-4">Selecciona un barbero</h2>
+    <div class="grid-list">
+      <ng-container *ngFor="let b of barberos">
+        <div
+          *ngIf="b.activo"
+          (click)="seleccionarBarbero(b)"
+          [class.selected]="barberoSeleccionado?.id === b.id"
+          class="card"
+        >
+          <span class="font-bold">{{ b.nombre }}</span>
+          <span class="status text-green-600">Disponible</span>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="actions mt-6">
+      <button class="btn-back" (click)="irAnterior()">Volver</button>
+      <button class="btn-next" [disabled]="!barberoSeleccionado" (click)="irSiguiente()">
+        Elegir fecha y hora
+      </button>
+    </div>
+  </div>
+
+  <!--PASO 3: CALENDARIO -->
+  <div *ngIf="pasoActual === 3" class="step-content">
+    <h2 class="text-xl mb-4">Selecciona Fecha y Hora</h2>
+
+    <div class="calendar-container">
+      <label for="fecha">Selecciona el día:</label>
+      <input
+        type="date"
+        id="fecha"
+        [(ngModel)]="fechaSeleccionada"
+        [min]="minFecha"
+        class="form-control"
+      />
+    </div>
+
+    <div *ngIf="fechaSeleccionada" class="hours-section">
+      <h3 class="text-lg font-bold">Mañana</h3>
+      <div class="hours-grid">
+        <button
+          *ngFor="let hora of horasManana"
+          (click)="horaSeleccionada = hora"
+          [class.seleccionado]="horaSeleccionada === hora"
+          class="btn-hour"
+        >
+          {{ hora }}
+        </button>
+      </div>
+
+      <h3 class="text-lg font-bold mt-4">Tarde</h3>
+      <div class="hours-grid">
+        <button
+          *ngFor="let hora of horasTarde"
+          (click)="horaSeleccionada = hora"
+          [class.seleccionado]="horaSeleccionada === hora"
+          class="btn-hour"
+        >
+          {{ hora }}
+        </button>
+      </div>
+    </div>
+
+    <div class="summary-card mt-6">
+      <p><strong>Resumen:</strong></p>
+      <p>Servicio: {{ servicioSeleccionado?.nombre }}</p>
+      <p>Barbero: {{ barberoSeleccionado?.nombre }}</p>
+    </div>
+
+    <div class="actions mt-6">
+      <button class="btn-back" (click)="irAnterior()">Volver</button>
+      <button
+        class="btn-confirm"
+        [disabled]="!fechaSeleccionada || !horaSeleccionada"
+        (click)="confirmarReserva()"
+      >
+        Finalizar Reserva
+      </button>
+    </div>
+  </div>
+</div>

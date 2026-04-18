@@ -1,0 +1,81 @@
+.wizard-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Barra de progreso */
+.progress-container {
+  background: #eee;
+  border-radius: 10px;
+  height: 10px;
+  margin-bottom: 30px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  background: #4f46e5;
+  height: 100%;
+  transition: width 0.3s ease;
+}
+
+/* Tarjetas de selección */
+.card {
+  border: 2px solid #e5e7eb;
+  padding: 15px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  transition: all 0.2s;
+}
+
+.card:hover {
+  background: #f9fafb;
+}
+
+.card.selected {
+  border-color: #4f46e5;
+  background-color: #f5f3ff;
+}
+
+/* Botones */
+button {
+  padding: 10px 20px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-next,
+.btn-confirm {
+  background: #4f46e5;
+  color: white;
+  border: none;
+  width: 100%;
+}
+
+.btn-back {
+  background: white;
+  border: 1px solid #ccc;
+}
+
+.btn-hour {
+  padding: 10px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
+.btn-hour.seleccionado {
+  background-color: #b1c3e3;
+  border-color: #a88734;
+  color: black;
+  font-weight: bold;
+}
