@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 12, 2026 at 08:51 AM
+-- Generation Time: Apr 18, 2026 at 09:08 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -41,8 +41,8 @@ CREATE TABLE `barberos` (
 --
 
 INSERT INTO `barberos` (`id`, `nombre`, `especialidad`, `activo`, `created_at`, `usuario_id`) VALUES
-(1, 'Carlos', 'Corte clásico', 1, '2026-04-12 08:29:53', NULL),
-(2, 'Javi', 'Barba y perfilado', 1, '2026-04-12 08:29:53', NULL);
+(1, 'Carlos', 'Corte clásico', 1, '2026-04-12 08:29:53', 1),
+(2, 'Javi', 'Barba y perfilado', 0, '2026-04-12 08:29:53', NULL);
 
 -- --------------------------------------------------------
 
@@ -66,7 +66,13 @@ CREATE TABLE `citas` (
 --
 
 INSERT INTO `citas` (`id`, `fecha_hora`, `fecha_hora_fin`, `estado`, `usuarios_id`, `barberos_id`, `servicios_id`, `created_at`) VALUES
-(1, '2026-04-20 10:00:00', '2026-04-20 10:30:00', 'pendiente', 1, 1, 1, '2026-04-12 08:30:11');
+(1, '2026-04-20 10:00:00', '2026-04-20 10:30:00', 'pendiente', 1, 1, 1, '2026-04-12 08:30:11'),
+(2, '2026-04-20 11:00:00', '2026-04-20 11:30:00', 'pendiente', 1, 1, 1, '2026-04-15 20:11:26'),
+(3, '2026-04-20 10:30:00', '2026-04-20 11:00:00', 'pendiente', 1, 1, 1, '2026-04-15 20:15:02'),
+(4, '2026-04-20 11:00:00', '2026-04-20 11:30:00', 'pendiente', 1, 2, 1, '2026-04-15 20:16:24'),
+(5, '2026-04-20 11:30:00', '2026-04-20 12:00:00', 'pendiente', 1, 2, 1, '2026-04-15 20:16:39'),
+(6, '2026-04-15 20:40:00', '2026-04-15 21:10:00', 'pendiente', 1, 1, 1, '2026-04-15 20:36:39'),
+(7, '2026-04-15 21:00:00', '2026-04-15 21:30:00', 'pendiente', 1, 1, 1, '2026-04-15 20:48:07');
 
 -- --------------------------------------------------------
 
@@ -112,7 +118,12 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `rol`, `created_at`) VALUES
-(1, 'Alex', 'alex@gmail.com', '$2b$10$efFAO2oqFJuItHjw15wWNeYJLURojtq5IW124K6RhXER1F0dz3SlK', NULL, 'cliente', '2026-03-21 20:37:17');
+(1, 'Alex', 'alex@gmail.com', '$2b$10$efFAO2oqFJuItHjw15wWNeYJLURojtq5IW124K6RhXER1F0dz3SlK', NULL, 'barbero', '2026-03-21 20:37:17'),
+(2, 'Test Cliente', 'cliente@test.com', '$2b$10$DEI/CNzDB.Z/KnU3yBYQNuN4HSmFJ9VttHKGjm.vEXPEfXjqD0noq', NULL, 'cliente', '2026-04-15 19:44:36'),
+(3, 'Admin', 'admin@gmail.com', '$2b$10$efFAO2oqFJuItHjw15wWNeYJLURojtq5IW124K6RhXE...', NULL, 'admin', '2026-04-15 19:58:20'),
+(4, 'Admin', 'admin@barberflow.com', '$2b$10$wk7TJMKuOLQugQKIjvQY1ueU3Dfbiln/jv3tcw/25q4mVWqaVgw5e', NULL, 'admin', '2026-04-15 19:59:35'),
+(5, 'Marta', 'm@gmail.com', '$2b$10$k4S2TvG0Twz7xpS6B.ag4.zEv7VETSqmA5WQp0w/dV/U6SEYr08I.', NULL, 'cliente', '2026-04-18 10:36:34'),
+(6, 'cliente', 'cliente@gmail.com', '$2b$10$8LKcRu7XHPyNl4iO2.u1qOUAOBCnjMWgNa4fqO7jmvdtPHDtpvwKe', NULL, 'cliente', '2026-04-18 10:50:53');
 
 -- --------------------------------------------------------
 
@@ -128,6 +139,13 @@ CREATE TABLE `walkins` (
   `estado` enum('esperando','atendiendo','completado','cancelado') DEFAULT 'esperando',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- Dumping data for table `walkins`
+--
+
+INSERT INTO `walkins` (`id`, `nombre`, `barberos_id`, `hora_llegada`, `estado`, `created_at`) VALUES
+(1, 'Cliente Test', 1, '2026-04-15 20:33:27', 'atendiendo', '2026-04-15 20:33:27');
 
 --
 -- Indexes for dumped tables
@@ -183,7 +201,7 @@ ALTER TABLE `barberos`
 -- AUTO_INCREMENT for table `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `servicios`
@@ -195,13 +213,13 @@ ALTER TABLE `servicios`
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `walkins`
 --
 ALTER TABLE `walkins`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- Constraints for dumped tables
