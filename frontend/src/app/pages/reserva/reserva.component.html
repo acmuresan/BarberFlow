@@ -1,0 +1,59 @@
+<div class="wizard-container">
+  <div class="progress-header">
+    <p>Paso {{ currentStep }} de {{ totalSteps }}</p>
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+    </div>
+  </div>
+
+  <section *ngIf="currentStep === 1" class="step-content animate-fade-in">
+    <h2>¿Qué te vas a hacer hoy?</h2>
+
+    <div class="options-list">
+      <ng-container *ngIf="servicios$ | async as servicios; else loading">
+        <button
+          *ngFor="let servicio of servicios"
+          class="card-option"
+          [class.selected]="selectedServicio?.id === servicio.id"
+          (click)="seleccionarServicio(servicio)"
+        >
+          <span class="name">{{ servicio.nombre }}</span>
+          <span class="price">{{ servicio.precio | currency: 'EUR' }}</span>
+        </button>
+      </ng-container>
+    </div>
+
+    <button class="btn-primary" [disabled]="!selectedServicio" (click)="nextStep()">
+      Siguiente
+    </button>
+  </section>
+
+  <section *ngIf="currentStep === 2" class="step-content animate-fade-in">
+    <h2>Elige a tu barbero</h2>
+
+    <div class="options-list">
+      <ng-container *ngIf="barberos$ | async as barberos; else loading">
+        <button
+          *ngFor="let barbero of barberos"
+          class="card-option"
+          [class.selected]="selectedBarbero?.id === barbero.id"
+          (click)="seleccionarBarbero(barbero)"
+        >
+          <span class="name">{{ barbero.nombre }}</span>
+          <span class="badge" *ngIf="barbero.especialidad">{{ barbero.especialidad }}</span>
+        </button>
+      </ng-container>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-secondary" (click)="prevStep()">Atrás</button>
+      <button class="btn-primary" [disabled]="!selectedBarbero" (click)="nextStep()">
+        Siguiente
+      </button>
+    </div>
+  </section>
+
+  <ng-template #loading>
+    <div class="spinner">Cargando opciones...</div>
+  </ng-template>
+</div>
