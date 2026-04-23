@@ -9,6 +9,13 @@ export const register = async (req: Request, res: Response) => {
   try {
     const { nombre, email, password } = req.body;
 
+    // Valido que los campos obligatorios existen y no están vacíos
+    if (!nombre || !email || !password) {
+      return res
+        .status(400)
+        .json({ success: false, error: "Faltan campos requeridos" });
+    }
+
     // Compruebo si el email ya existe en la BD
     const [usuarios] = await pool.execute<RowDataPacket[]>(
       "SELECT * FROM usuarios WHERE email = ?",
@@ -91,7 +98,7 @@ export const login = async (req: Request, res: Response) => {
         barbero_id,
       },
       process.env.JWT_SECRET as string,
-      { expiresIn: "8h" },
+      { expiresIn: "365d" },
     );
 
     res.status(200).json({
