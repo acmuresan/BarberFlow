@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 18, 2026 at 09:08 AM
+-- Generation Time: Apr 23, 2026 at 07:54 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -72,7 +72,8 @@ INSERT INTO `citas` (`id`, `fecha_hora`, `fecha_hora_fin`, `estado`, `usuarios_i
 (4, '2026-04-20 11:00:00', '2026-04-20 11:30:00', 'pendiente', 1, 2, 1, '2026-04-15 20:16:24'),
 (5, '2026-04-20 11:30:00', '2026-04-20 12:00:00', 'pendiente', 1, 2, 1, '2026-04-15 20:16:39'),
 (6, '2026-04-15 20:40:00', '2026-04-15 21:10:00', 'pendiente', 1, 1, 1, '2026-04-15 20:36:39'),
-(7, '2026-04-15 21:00:00', '2026-04-15 21:30:00', 'pendiente', 1, 1, 1, '2026-04-15 20:48:07');
+(7, '2026-04-15 21:00:00', '2026-04-15 21:30:00', 'pendiente', 1, 1, 1, '2026-04-15 20:48:07'),
+(8, '2026-04-28 17:00:00', '2026-04-28 17:30:00', 'pendiente', 2, 1, 1, '2026-04-23 21:38:29');
 
 -- --------------------------------------------------------
 
@@ -201,7 +202,7 @@ ALTER TABLE `barberos`
 -- AUTO_INCREMENT for table `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `servicios`
