@@ -1,5 +1,6 @@
 import pool from "../config/database.js";
 import { RowDataPacket, ResultSetHeader } from "mysql2";
+import { enviarConfirmacion } from "./email.service.js";
 
 // Tipamos la fila de servicio que necesitamos para obtener la duración
 interface ServicioRow extends RowDataPacket {
@@ -24,6 +25,14 @@ interface CitasConflicto extends RowDataPacket {
   id: number;
 }
 
+interface EmailRow extends RowDataPacket {
+  nombre: string;
+  email: string;
+  barbero_nombre: string;
+  servicio_nombre: string;
+  fecha_hora: string;
+}
+
 // Calculamos fecha_hora_fin en backend con la duración real del servicio.
 function calcularFechaFin(fechaHora: string, duracion: number): string {
   const inicio = new Date(fechaHora);
@@ -40,13 +49,13 @@ function calcularFechaFin(fechaHora: string, duracion: number): string {
 // Comprueba si el barbero ya tiene una cita que solapa con el intervalo dado.
 export async function checkDisponibilidad(
   barberos_id: number,
-  fechaHora: string,
-  fechaHoraFin: string,
+  fecha_hora: string,
+  fecha_hora_fin: string,
 ): Promise<boolean> {
   // La query usa lógica de intervalos.
   const [citas] = await pool.execute<CitasConflicto[]>(
     "SELECT id FROM citas WHERE barberos_id = ? AND estado NOT IN ('cancelada') AND ? < fecha_hora_fin AND ? > fecha_hora LIMIT 1",
-    [barberos_id, fechaHora, fechaHoraFin],
+    [barberos_id, fecha_hora, fecha_hora_fin],
   );
 
   // Si hay al menos una fila hay conflicto
@@ -71,6 +80,16 @@ export async function crearCita(
     // Si no existe el servicio no podemos continuar
     if (servicio.length === 0) {
       return { error: "El servicio no se ha encontrado.", status: 404 };
+    }
+
+    // Comprobamos que el barbero existe y está activo
+    const [barberos] = await pool.execute<RowDataPacket[]>(
+      "SELECT id FROM barberos WHERE id = ? AND activo = 1",
+      [barbero_id],
+    );
+
+    if (barberos.length === 0) {
+      return { error: "El barbero no está disponible", status: 400 };
     }
 
     // Calculamos cuando termina la cita sumando la duración al inicio
@@ -130,6 +149,61 @@ export async function getCitasCliente(
     );
 
     return citas;
+  } catch (error) {
+    return { error: "Error interno del servidor", status: 500 };
+  }
+}
+
+export async function actualizarEstadoCita(
+  cita_id: number,
+  nuevo_estado: string,
+): Promise<{ ok: true } | { error: string; status: number }> {
+  try {
+    const ESTADOS_VALIDOS = [
+      "pendiente",
+      "confirmada",
+      "completada",
+      "cancelada",
+    ];
+
+    if (!ESTADOS_VALIDOS.includes(nuevo_estado)) {
+      return { error: "Estado no valido", status: 400 };
+    }
+
+    const [cita] = await pool.execute<RowDataPacket[]>(
+      "SELECT * FROM citas WHERE id = ?",
+      [cita_id],
+    );
+
+    if (cita.length === 0) {
+      return { error: "La cita no se ha encontrado.", status: 404 };
+    }
+
+    await pool.execute("UPDATE citas SET estado = ? WHERE id = ?", [
+      nuevo_estado,
+      cita_id,
+    ]);
+
+    if (nuevo_estado === "confirmada") {
+      const [datosEmail] = await pool.execute<EmailRow[]>(
+        `SELECT u.nombre, u.email, b.nombre AS barbero_nombre,
+          s.nombre AS servicio_nombre, c.fecha_hora
+   FROM citas c
+   JOIN usuarios u  ON c.usuarios_id  = u.id
+   JOIN barberos b  ON c.barberos_id  = b.id
+   JOIN servicios s ON c.servicios_id = s.id
+   WHERE c.id = ?`,
+        [cita_id],
+      );
+
+      if (datosEmail.length > 0) {
+        enviarConfirmacion(datosEmail[0]).catch((err) =>
+          console.error("Error enviado email:", err),
+        );
+      }
+    }
+
+    return { ok: true };
   } catch (error) {
     return { error: "Error interno del servidor", status: 500 };
   }
