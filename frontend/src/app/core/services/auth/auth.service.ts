@@ -1,39 +1,60 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
-import { tap } from 'rxjs';
+import { catchError, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private http = inject(HttpClient);
   private apiUrl = environment.apiUrl;
 
+  constructor(private http: HttpClient) {}
+
   // Envía los datos al servidor y reacciona a la respuesta
-  login(credentials: any) {
-    return this.http.post<any>(`${this.apiUrl}/api/auth/login`, credentials).pipe(
-      tap((res) => {
-        // Se guarda la sesión en el navegador del cliente
-        //Suponiendo que el backend devuelve ( token, rol, barbero_id )
-        localStorage.setItem('token', res.token);
-        localStorage.setItem('rol', res.rol);
-        if (res.barbero_id) {
-          localStorage.setItem('barbero_id', res.barbero_id);
+  login(credentials: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
+      tap((response: any) => {
+        if (response.success) {
+          this.guardarSesion(
+            response.data.token,
+            response.data.rol,
+            response.data.usuario_id,
+            response.data.barbero_id, // Puede ser null si es cliente o admin
+          );
         }
       }),
+      catchError(this.handleError),
     );
   }
 
-  register(userData: any) {
-    return this.http.post<any>(`${this.apiUrl}/api/auth/register`, userData);
+  register(userData: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/register`, userData).pipe(catchError(this.handleError));
   }
 
-  getRole(): string | null {
+  private guardarSesion(token: string, rol: string, usuarioId: number, barberoId?: number) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('rol', rol);
+    localStorage.setItem('usuario_id', usuarioId.toString());
+    if (barberoId) {
+      localStorage.setItem('barbero_id', barberoId.toString());
+    }
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+  getRol(): string | null {
     return localStorage.getItem('rol');
   }
 
   logout() {
     localStorage.clear(); // Borra todo (token, rol, id)
+  }
+
+  private handleError(error: HttpErrorResponse) {
+    // Se propaga el error para que el componente decida cómo mostrarlo
+    return throwError(() => error);
   }
 }
