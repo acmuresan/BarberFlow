@@ -1,0 +1,34 @@
+<div class="citas-page">
+  <h1>Mis Reservas</h1>
+
+  <div *ngIf="isLoading" class="loading">Cargando tus citas...</div>
+
+  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+
+  <div *ngIf="!isLoading && citas.length === 0" class="empty-state">
+    <div class="icon">📅</div>
+    <p>Aún no tienes ninguna cita programada.</p>
+    <button routerLink="/reserva" class="btn-primary">Reservar mi primera cita</button>
+  </div>
+
+  <div class="citas-list" *ngIf="citas.length > 0">
+    <div class="cita-card" *ngFor="let cita of citas">
+      <div class="cita-header">
+        <span [ngClass]="['status-chip', getEstadoClass(cita.estado)]">
+          {{ cita.estado | uppercase }}
+        </span>
+        <span class="fecha">{{ cita.fecha_hora | date: 'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+
+      <div class="cita-body">
+        <p><strong>Servicio:</strong> {{ cita.servicio_nombre }}</p>
+        <p><strong>Barbero:</strong> {{ cita.barbero_nombre }}</p>
+        <p class="duracion">Duración estimada: {{ cita.duracion }} min</p>
+      </div>
+
+      <div class="cita-footer" *ngIf="cita.estado === 'pendiente'">
+        <button (click)="cancelarCita(cita.id)" class="btn-outline-danger">Cancelar Cita</button>
+      </div>
+    </div>
+  </div>
+</div>
