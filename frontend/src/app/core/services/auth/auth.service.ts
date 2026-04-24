@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { catchError, tap } from 'rxjs/operators';
@@ -39,6 +39,9 @@ export class AuthService {
     localStorage.setItem('usuario_id', usuarioId.toString());
     if (barberoId) {
       localStorage.setItem('barbero_id', barberoId.toString());
+    } else {
+      // Limpia datos de sesiones anteriores
+      localStorage.removeItem('barbero_id');
     }
   }
 
@@ -49,14 +52,27 @@ export class AuthService {
     return localStorage.getItem('rol');
   }
 
-  // Esta función recupera el ID del usuario que guardamos al hacer login
+  // Lee directamente 'usuario_id' como string y lo pasa a número
   getUserId(): number {
-    const userData = localStorage.getItem('user'); // O donde Alex haya decidido guardarlo
-    if (userData) {
-      const user = JSON.parse(userData);
-      return user.id;
-    }
-    return 0;
+    const idStr = localStorage.getItem('usuario_id');
+    return idStr ? parseInt(idStr, 10) : 0;
+  }
+
+  getUserData(): { rol: string; barbero_id: number | null } | null {
+    const rol = this.getRol();
+    if (!rol) return null; // Si no hay rol, no hay sesión válida
+
+    const barberoIdRaw = localStorage.getItem('barbero_id');
+    return {
+      rol: rol,
+      // Manejamos el casteo de string a number de forma segura
+      barbero_id: barberoIdRaw ? Number(barberoIdRaw) : null,
+    };
+  }
+
+  isLoggedIn(): boolean {
+    // Devuelve true si el token existe en localStorage
+    return !!this.getToken();
   }
 
   logout() {

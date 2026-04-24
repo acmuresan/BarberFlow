@@ -1,0 +1,111 @@
+<div class="admin-container p-4">
+  <h1 class="text-2xl font-bold mb-6">Gestión de Barbería</h1>
+  <div
+    *ngIf="uiMessage"
+    class="mb-4 p-3 rounded shadow-sm text-sm font-medium transition-all"
+    [ngClass]="{
+      'bg-green-100 text-green-800 border border-green-200': uiMessage.type === 'success',
+      'bg-red-100 text-red-800 border border-red-200': uiMessage.type === 'error',
+    }"
+  >
+    {{ uiMessage.text }}
+  </div>
+  <div class="flex gap-2 mb-6 bg-gray-100 p-1 rounded-lg">
+    <button
+      (click)="view = 'barberos'; resetForms()"
+      [class.active]="view === 'barberos'"
+      class="flex-1 py-2 rounded-md transition"
+    >
+      Barberos
+    </button>
+    <button
+      (click)="view = 'servicios'; resetForms()"
+      [class.active]="view === 'servicios'"
+      class="flex-1 py-2 rounded-md transition"
+    >
+      Servicios
+    </button>
+  </div>
+
+  <section *ngIf="view === 'barberos'" class="fade-in">
+    <div class="card mb-6 p-4 bg-white shadow rounded">
+      <h2 class="font-semibold mb-4">{{ editingId ? 'Editar' : 'Nuevo' }} Barbero</h2>
+      <form [formGroup]="barberoForm" (ngSubmit)="onSaveBarbero()" class="space-y-3">
+        <input formControlName="nombre" placeholder="Nombre completo" class="input-field" />
+        <input
+          formControlName="especialidad"
+          placeholder="Ej: Degradados, Barba"
+          class="input-field"
+        />
+        <div class="flex gap-2">
+          <button
+            type="submit"
+            [disabled]="barberoForm.invalid || isLoading"
+            class="btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <span *ngIf="isLoading">⏳ Guardando...</span>
+            <span *ngIf="!isLoading">{{ editingId ? 'Actualizar' : 'Añadir Barbero' }}</span>
+          </button>
+
+          <button
+            *ngIf="editingId"
+            (click)="resetForms()"
+            type="button"
+            [disabled]="isLoading"
+            class="btn-secondary"
+          >
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="space-y-3">
+      <div
+        *ngFor="let b of barberos"
+        class="flex justify-between items-center p-3 border-b bg-white"
+      >
+        <div>
+          <p class="font-medium" [class.text-gray-400]="!b.activo">{{ b.nombre }}</p>
+          <span class="text-xs text-gray-500">{{ b.especialidad }}</span>
+        </div>
+        <div class="flex gap-3">
+          <button (click)="editEntity(b, 'b')" class="text-blue-600">Editar</button>
+          <button
+            (click)="toggleBarberoActivo(b)"
+            [class.text-red-600]="b.activo"
+            [class.text-green-600]="!b.activo"
+          >
+            {{ b.activo ? 'Desactivar' : 'Activar' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="view === 'servicios'" class="fade-in">
+    <div class="card mb-6 p-4 bg-white shadow rounded">
+      <h2 class="font-semibold mb-4">Gestionar Servicio</h2>
+      <form [formGroup]="servicioForm" (ngSubmit)="onSaveServicio()" class="space-y-3">
+        <input formControlName="nombre" placeholder="Nombre del servicio" class="input-field" />
+        <div class="flex gap-2">
+          <input
+            type="number"
+            formControlName="precio"
+            placeholder="Precio €"
+            class="input-field w-1/2"
+          />
+          <input
+            type="number"
+            formControlName="duracion"
+            placeholder="Mins"
+            class="input-field w-1/2"
+          />
+        </div>
+        <button type="submit" [disabled]="servicioForm.invalid" class="btn-primary w-full">
+          Guardar
+        </button>
+      </form>
+    </div>
+  </section>
+</div>
