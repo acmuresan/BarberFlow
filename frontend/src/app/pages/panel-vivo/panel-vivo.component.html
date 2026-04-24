@@ -1,1 +1,72 @@
-<p>panel-vivo works!</p>
+<div class="panel-container">
+  <header class="panel-header">
+    <div class="title-row">
+      <h1>Flujo en Vivo</h1>
+      <span class="badge-live">En directo</span>
+    </div>
+    <p class="last-update">Última actualización: {{ lastUpdate() | date: 'HH:mm:ss' }}</p>
+  </header>
+
+  <div *ngIf="loading() && !panelData()" class="loader-container">
+    <div class="spinner"></div>
+    <p>Conectando con la barbería...</p>
+  </div>
+
+  <ng-container *ngIf="panelData()">
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <span class="stat-label">En espera</span>
+        <span class="stat-value">{{ panelData().total_personas }}</span>
+      </div>
+
+      <div class="stat-card orange">
+        <span class="stat-label">Tiempo est.</span>
+        <span class="stat-value">
+          {{ panelData().tiempo_espera_estimado_min ?? '--' }}
+          <small *ngIf="panelData().tiempo_espera_estimado_min">min</small>
+        </span>
+      </div>
+    </div>
+
+    <section class="section">
+      <h2>Equipo en Servicio</h2>
+      <div class="barberos-list">
+        <div *ngFor="let barbero of panelData().barberos" class="barbero-item">
+          <div class="barbero-info">
+            <div class="avatar">{{ barbero.nombre | slice: 0 : 1 }}</div>
+            <span class="barbero-name">{{ barbero.nombre }}</span>
+          </div>
+          <span class="status-indicator busy">Atendiendo</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>Siguientes en turno</h2>
+      <div class="queue-list">
+        <div *ngFor="let cita of panelData().proximas_citas" class="queue-item appointment">
+          <div class="queue-details">
+            <span class="time">{{ cita.fecha_hora | date: 'HH:mm' }}</span>
+            <span class="client-name">{{ cita.usuario_nombre }}</span>
+          </div>
+          <span class="queue-type">Cita</span>
+        </div>
+
+        <div *ngFor="let walkin of panelData().walkins_cola" class="queue-item walkin">
+          <div class="queue-details">
+            <span class="time">Local</span>
+            <span class="client-name">{{ walkin.nombre }}</span>
+          </div>
+          <span class="queue-type walkin-badge">Walk-in</span>
+        </div>
+
+        <div
+          *ngIf="panelData().proximas_citas.length === 0 && panelData().walkins_cola.length === 0"
+          class="empty-state"
+        >
+          No hay clientes en espera.
+        </div>
+      </div>
+    </section>
+  </ng-container>
+</div>
