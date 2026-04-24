@@ -6,6 +6,7 @@
     </div>
   </div>
 
+  <!--Selección de servicio-->
   <section *ngIf="currentStep === 1" class="step-content animate-fade-in">
     <h2>¿Qué te vas a hacer hoy?</h2>
 
@@ -28,6 +29,7 @@
     </button>
   </section>
 
+  <!--Selección de barbero-->
   <section *ngIf="currentStep === 2" class="step-content animate-fade-in">
     <h2>Elige a tu barbero</h2>
 
@@ -50,6 +52,95 @@
       <button class="btn-primary" [disabled]="!selectedBarbero" (click)="nextStep()">
         Siguiente
       </button>
+    </div>
+  </section>
+
+  <!--Selección de fecha-->
+  <section *ngIf="currentStep === 3" class="step-content animate-fade-in">
+    <h2>¿Cuándo quieres venir?</h2>
+
+    <div class="calendar-wrapper">
+      <div class="calendar-header">
+        <button
+          (click)="cambiarMes(-1)"
+          [disabled]="
+            viewDate.getMonth() === hoy.getMonth() && viewDate.getFullYear() === hoy.getFullYear()
+          "
+        ></button>
+        <span>{{ viewDate | date: 'MMMM yyyy' | titlecase }}</span>
+        <button (click)="cambiarMes(1)">></button>
+      </div>
+
+      <div class="calendar-grid">
+        <div class="day-label" *ngFor="let d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']">{{ d }}</div>
+
+        <div
+          *ngFor="let dia of diasDelMes"
+          class="day-cell"
+          [class.disabled]="esFechaPasada(dia)"
+          [class.selected]="selectedFecha?.toDateString() === dia.toDateString()"
+          (click)="seleccionarFecha(dia)"
+        >
+          {{ dia | date: 'd' }}
+        </div>
+      </div>
+    </div>
+
+    <div class="selection-info" *ngIf="selectedFecha">
+      Has elegido el: <strong>{{ selectedFecha | date: 'fullDate' }}</strong>
+    </div>
+
+    <div class="action-buttons">
+      <button class="btn-secondary" (click)="prevStep()">Atrás</button>
+      <button class="btn-primary" [disabled]="!selectedFecha" (click)="nextStep()">
+        Siguiente
+      </button>
+    </div>
+  </section>
+
+  <!--Selección de hora-->
+  <section *ngIf="currentStep === 4" class="step-content animate-fade-in">
+    <h2>¿A qué hora te viene bien?</h2>
+    <div class="time-grid">
+      <button
+        *ngFor="let hora of horasDisponibles"
+        class="time-slot"
+        [class.selected]="selectedHora === hora"
+        (click)="selectedHora = hora"
+      >
+        {{ hora }}
+      </button>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-secondary" (click)="prevStep()">Atrás</button>
+      <button class="btn-primary" [disabled]="!selectedHora" (click)="nextStep()">Siguiente</button>
+    </div>
+  </section>
+
+  <!--Resumen de selección-->
+  <section *ngIf="currentStep === 5" class="step-content animate-fade-in">
+    <h2>Resumen de tu reserva</h2>
+    <div class="summary-card">
+      <div class="summary-item">
+        <span>Servicio:</span> <strong>{{ selectedServicio?.nombre }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Barbero:</span> <strong>{{ selectedBarbero?.nombre }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Fecha:</span> <strong>{{ selectedFecha | date: 'dd/MM/yyyy' }}</strong>
+      </div>
+      <div class="summary-item">
+        <span>Hora:</span> <strong>{{ selectedHora }}</strong>
+      </div>
+      <hr />
+      <div class="summary-total">
+        <span>Total:</span> <strong>{{ selectedServicio?.precio }}€</strong>
+      </div>
+    </div>
+    <div class="action-buttons">
+      <button class="btn-secondary" (click)="prevStep()">Corregir</button>
+      <button class="btn-confirm" (click)="confirmarReserva()">CONFIRMAR Y RESERVAR</button>
     </div>
   </section>
 

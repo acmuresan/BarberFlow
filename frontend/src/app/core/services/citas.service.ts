@@ -20,4 +20,8 @@ export class CitasService {
   cambiarEstado(citaId: number, nuevoEstado: string): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${citaId}/estado`, { estado: nuevoEstado });
   }
+
+  crearCita(datosCita: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, datosCita);
+  }
 }

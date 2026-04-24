@@ -49,6 +49,16 @@ export class AuthService {
     return localStorage.getItem('rol');
   }
 
+  // Esta función recupera el ID del usuario que guardamos al hacer login
+  getUserId(): number {
+    const userData = localStorage.getItem('user'); // O donde Alex haya decidido guardarlo
+    if (userData) {
+      const user = JSON.parse(userData);
+      return user.id;
+    }
+    return 0;
+  }
+
   logout() {
     localStorage.clear(); // Borra todo (token, rol, id)
   }
