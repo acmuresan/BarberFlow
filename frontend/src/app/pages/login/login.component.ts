@@ -37,7 +37,9 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
-        const rol = this.authService.getRol();
+        const user = this.authService.currentUser(); //Cambio: Lee el rol directamente del Signal recién actualizado
+        const rol = user ? user.rol : null;
+
         this.redirigirSegunRol(rol);
       },
       error: (err) => {

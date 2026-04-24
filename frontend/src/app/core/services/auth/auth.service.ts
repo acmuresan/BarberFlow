@@ -1,28 +1,37 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '../../../../environments/environment';
 import { catchError, tap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 
+// Interfaz estricta para el estado de la sesión
+export interface UserSession {
+  token: string;
+  rol: 'admin' | 'barbero' | 'cliente';
+  usuario_id: number;
+  barbero_id: number | null;
+}
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl;
-
-  constructor(private http: HttpClient) {}
+  private authUrl = `${environment.apiUrl}/api/auth`; // La base de auth en el backend es /api/auth
+  private http = inject(HttpClient); //Uso de inject() en lugar del constructor
+  // SIGNAL: Fuente de la verdad reactiva para toda la app
+  public currentUser = signal<UserSession | null>(this.loadInitialSession());
 
   // Envía los datos al servidor y reacciona a la respuesta
   login(credentials: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/login`, credentials).pipe(
+    return this.http.post(`${this.authUrl}/login`, credentials).pipe(
       tap((response: any) => {
         if (response.success) {
-          this.guardarSesion(
-            response.data.token,
-            response.data.rol,
-            response.data.usuario_id,
-            response.data.barbero_id, // Puede ser null si es cliente o admin
-          );
+          const session: UserSession = {
+            token: response.data.token,
+            rol: response.data.rol,
+            usuario_id: response.data.usuario_id,
+            barbero_id: response.data.barbero_id || null, // Null seguro para admin puro/cliente
+          };
+          this.guardarSesion(session);
         }
       }),
       catchError(this.handleError),
@@ -30,44 +39,23 @@ export class AuthService {
   }
 
   register(userData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/register`, userData).pipe(catchError(this.handleError));
+    return this.http.post(`${this.authUrl}/register`, userData).pipe(catchError(this.handleError));
   }
 
-  private guardarSesion(token: string, rol: string, usuarioId: number, barberoId?: number) {
-    localStorage.setItem('token', token);
-    localStorage.setItem('rol', rol);
-    localStorage.setItem('usuario_id', usuarioId.toString());
-    if (barberoId) {
-      localStorage.setItem('barbero_id', barberoId.toString());
-    } else {
-      // Limpia datos de sesiones anteriores
-      localStorage.removeItem('barbero_id');
-    }
+  private guardarSesion(session: UserSession) {
+    localStorage.setItem('session', JSON.stringify(session)); // Se guarda todo en un solo string JSON
+    this.currentUser.set(session); // Notifica a toda la app al instante
   }
 
+  // Se ejecuta al arrancar el servicio para recuperar la sesión si existe
+  private loadInitialSession(): UserSession | null {
+    const data = localStorage.getItem('session');
+    return data ? JSON.parse(data) : null;
+  }
+
+  // Helper para el Interceptor JWT
   getToken(): string | null {
     return localStorage.getItem('token');
-  }
-  getRol(): string | null {
-    return localStorage.getItem('rol');
-  }
-
-  // Lee directamente 'usuario_id' como string y lo pasa a número
-  getUserId(): number {
-    const idStr = localStorage.getItem('usuario_id');
-    return idStr ? parseInt(idStr, 10) : 0;
-  }
-
-  getUserData(): { rol: string; barbero_id: number | null } | null {
-    const rol = this.getRol();
-    if (!rol) return null; // Si no hay rol, no hay sesión válida
-
-    const barberoIdRaw = localStorage.getItem('barbero_id');
-    return {
-      rol: rol,
-      // Manejamos el casteo de string a number de forma segura
-      barbero_id: barberoIdRaw ? Number(barberoIdRaw) : null,
-    };
   }
 
   isLoggedIn(): boolean {
@@ -76,6 +64,7 @@ export class AuthService {
   }
 
   logout() {
+    localStorage.removeItem('session');
     localStorage.clear(); // Borra todo (token, rol, id)
   }
 

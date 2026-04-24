@@ -104,9 +104,17 @@ export class ReservaComponent implements OnInit {
     )
       return;
 
+    // Uso del operador '?.' por seguridad
+    const user = this.authService.currentUser();
+
+    if (!user) {
+      alert('Error de sesión. Vuelve a iniciar sesión');
+      return;
+    }
+
     // Construimos el objeto
     const bodyCita = {
-      usuario_id: this.authService.getUserId(), // Extraído del JWT
+      usuario_id: user.usuario_id, // Extraído de la RAM en lugar de localStorage
       barbero_id: this.selectedBarbero.id,
       servicio_id: this.selectedServicio.id,
       fecha_hora: `${this.selectedFecha.toISOString().split('T')[0]}T${this.selectedHora}:00`,
