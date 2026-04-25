@@ -12,7 +12,7 @@ export class CitasService {
   constructor(private http: HttpClient) {}
 
   // Obtener citas de un usuario específico
-  getCitasByUsuario(usuarioId: string): Observable<any> {
+  getCitasByUsuario(usuarioId: number | string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${usuarioId}`);
   }
 

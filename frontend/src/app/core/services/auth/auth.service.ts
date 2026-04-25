@@ -55,7 +55,10 @@ export class AuthService {
 
   // Helper para el Interceptor JWT
   getToken(): string | null {
-    return localStorage.getItem('token');
+    const sessionStr = localStorage.getItem('session');
+    if (!sessionStr) return null;
+    const session = JSON.parse(sessionStr);
+    return session.token;
   }
 
   isLoggedIn(): boolean {

@@ -1,5 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { CitasService } from '../../core/services/citas.service';
+import { AuthService } from '../../core/services/auth/auth.service';
+import { FeedbackService } from '../../core/services/feedback.service';
 
 @Component({
   selector: 'app-mis-citas',
@@ -7,48 +10,56 @@ import { CitasService } from '../../core/services/citas.service';
   styleUrls: ['./mis-citas.component.scss'],
 })
 export class MisCitasComponent implements OnInit {
-  citas: any[] = [];
-  isLoading: boolean = true;
-  errorMessage: string = '';
+  private citasService = inject(CitasService);
+  private feedback = inject(FeedbackService);
+  private authService = inject(AuthService);
 
-  constructor(private citasService: CitasService) {}
+  citas: any[] = [];
+
+  // Signal para controlar el modal. Si tiene un número (ID), el modal se abre. Si es null, se cierra.
+  citaACancelar = signal<number | null>(null);
 
   ngOnInit(): void {
     this.cargarCitas();
   }
 
   cargarCitas(): void {
-    const usuarioId = localStorage.getItem('usuario_id');
-    if (!usuarioId) {
-      this.errorMessage = 'No se encontró sesión de usuario.';
-      this.isLoading = false;
+    const user = this.authService.currentUser();
+    if (!user || !user.usuario_id) {
       return;
     }
-
-    this.citasService.getCitasByUsuario(usuarioId).subscribe({
+    this.citasService.getCitasByUsuario(user.usuario_id).subscribe({
       next: (res) => {
         this.citas = res.data;
-        this.isLoading = false;
       },
-      error: (err) => {
-        this.errorMessage = 'Error al cargar tus citas.';
-        this.isLoading = false;
-      },
+      // El error de carga lo notifica el Interceptor
     });
   }
 
-  cancelarCita(id: number): void {
-    if (confirm('¿Estás seguro de que deseas cancelar esta cita?')) {
-      this.citasService.cambiarEstado(id, 'cancelada').subscribe({
-        next: () => {
-          // Se cambia el estado localmente para no recargar todo
-          const cita = this.citas.find((c) => c.id === id);
-          if (cita) cita.estado = 'cancelada';
-          alert('Cita cancelada correctamente.');
-        },
-        error: () => alert('No se pudo cancelar la cita. Inténtalo de nuevo.'),
-      });
-    }
+  //Lógica del modal
+
+  pedirConfirmacion(id: number): void {
+    this.citaACancelar.set(id); // Abre el modal
+  }
+
+  cerrarModal(): void {
+    this.citaACancelar.set(null); // Cierra el modal
+  }
+
+  cancelarCita(): void {
+    const id = this.citaACancelar();
+    if (!id) return;
+
+    this.citasService.cambiarEstado(id, 'cancelada').subscribe({
+      next: () => {
+        // Actualización en memoria
+        const cita = this.citas.find((c) => c.id === id);
+        if (cita) cita.estado = 'cancelada';
+
+        this.feedback.showToast('Cita cancelada correctamente', 'success');
+        this.cerrarModal(); // Cerramos el modal tras el éxito
+      },
+    });
   }
 
   // Helper para asignar clases CSS según el estado

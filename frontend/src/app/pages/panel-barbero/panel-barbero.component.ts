@@ -1,8 +1,10 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { BarberosService } from '../../core/services/barberos.service';
 import { AuthService } from '../../core/services/auth/auth.service';
-import { DatePipe } from '@angular/common';
+import { WalkinsService } from '../../core/services/walkins.service';
+import { FeedbackService } from '../../core/services/feedback.service';
 
 @Component({
   selector: 'app-panel-barbero',
@@ -15,6 +17,9 @@ import { DatePipe } from '@angular/common';
 export class BarberoPanelComponent implements OnInit {
   private barberoService = inject(BarberosService);
   private authService = inject(AuthService);
+  private walkinsService = inject(WalkinsService);
+  private feedback = inject(FeedbackService);
+  private fb = inject(FormBuilder);
 
   // Signals para el estado de la vista
   citas = signal<any[]>([]);
@@ -22,6 +27,11 @@ export class BarberoPanelComponent implements OnInit {
   loading = signal<boolean>(true);
 
   barberoId!: number;
+
+  // Formulario reactivo para registrar nuevos walk-ins
+  walkinForm: FormGroup = this.fb.group({
+    nombre: ['', Validators.required],
+  });
 
   ngOnInit() {
     // Obtenemos el ID vinculado del usuario logueado
@@ -31,7 +41,7 @@ export class BarberoPanelComponent implements OnInit {
       this.barberoId = user.barbero_id;
       this.cargarDatos();
     } else {
-      console.error('No se pudo identificar el perfil de barbero del usuario logueado');
+      this.feedback.showToast('Error de perfil. Cierre sesión y vuelva a entrar', 'error');
     }
   }
 
@@ -43,15 +53,11 @@ export class BarberoPanelComponent implements OnInit {
 
         // Se ordena por hora de menor a mayor
         const citasOrdenadas = data.sort((a: any, b: any) => {
-          const tiempoA = new Date(a.fecha_hora).getTime(); //Convierte string ISO a Date
-          const tiempoB = new Date(b.fecha_hora).getTime();
-          return tiempoA - tiempoB;
+          return new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime();
         });
-
         // Actualiza el Signal con el array ya ordenado
         this.citas.set(citasOrdenadas);
       },
-      error: (err) => console.error('Error al cargar citas:', err),
     });
 
     this.barberoService.getWalkinsPanel().subscribe({
@@ -62,13 +68,27 @@ export class BarberoPanelComponent implements OnInit {
           (w: any) => w.barberos_id === null || w.barberos_id === this.barberoId,
         );
         this.walkins.set(filtrados);
-        this.loading.set(false);
-      },
-      error: (err) => {
-        console.error('Error al cargar walkins:', err);
-        this.loading.set(false);
+        this.loading.set(false); //Se apaga loading inicial
       },
     });
+  }
+
+  // Lógica de registro de walk-ins
+  registrarWalkin(): void {
+    if (this.walkinForm.invalid) return;
+
+    this.walkinsService
+      .crearWalkin({
+        nombre: this.walkinForm.value.nombre,
+        barberos_id: this.barberoId, // Se asigna automáticamente al barbero actual
+      })
+      .subscribe({
+        next: () => {
+          this.feedback.showToast('Cliente añadido a la cola', 'success');
+          this.walkinForm.reset();
+          this.cargarDatos(); // Refrescael panel para que aparezca
+        },
+      });
   }
 
   cambiarEstadoWalkin(id: number, nuevoEstado: 'atendiendo' | 'completado') {
@@ -76,7 +96,6 @@ export class BarberoPanelComponent implements OnInit {
       next: () => {
         this.cargarDatos(); // Refresh sencillo
       },
-      error: (err) => console.error('Error al actualizar estado:', err),
     });
   }
 }

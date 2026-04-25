@@ -1,7 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
+
 import { AuthService } from '../../core/services/auth/auth.service';
+import { FeedbackService } from '../../core/services/feedback.service';
+
 import { BarberosService } from '../../core/services/barberos.service';
 import { ServiciosService } from '../../core/services/servicios.service';
 import { CitasService } from '../../core/services/citas.service';
@@ -14,6 +17,13 @@ import { BarberoModel } from '../../core/models/barbero.model';
   styleUrls: ['./reserva.component.scss'],
 })
 export class ReservaComponent implements OnInit {
+  private serviciosService = inject(ServiciosService);
+  private barberosService = inject(BarberosService);
+  private citasService = inject(CitasService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
+  private feedback = inject(FeedbackService);
+
   // Estado del Wizard
   currentStep: number = 1;
   totalSteps: number = 5;
@@ -35,14 +45,6 @@ export class ReservaComponent implements OnInit {
   // Selección del usuario
   selectedServicio: ServicioModel | null = null;
   selectedBarbero: BarberoModel | null = null;
-
-  constructor(
-    private serviciosService: ServiciosService,
-    private barberosService: BarberosService,
-    private citasService: CitasService,
-    private authService: AuthService,
-    private router: Router,
-  ) {}
 
   ngOnInit(): void {
     // Cargamos los datos al iniciar el componente
@@ -111,7 +113,6 @@ export class ReservaComponent implements OnInit {
       alert('Error de sesión. Vuelve a iniciar sesión');
       return;
     }
-
     // Construimos el objeto
     const bodyCita = {
       usuario_id: user.usuario_id, // Extraído de la RAM en lugar de localStorage
@@ -121,13 +122,10 @@ export class ReservaComponent implements OnInit {
     };
 
     this.citasService.crearCita(bodyCita).subscribe({
-      next: (res: any) => {
-        alert('¡Reserva realizada con éxito! Revisa tu email.');
+      next: () => {
+        // Solo se maneja el caso de éxito, El loading y el error ahora los gestiona el Interceptor
+        this.feedback.showToast('¡Reserva confirmada con éxito!', 'success');
         this.router.navigate(['/mis-citas']);
-      },
-      error: (err: any) => {
-        console.error('Error de la API:', err);
-        alert('Lo sentimos, el hueco acaba de ser ocupado o hubo un error.');
       },
     });
   }

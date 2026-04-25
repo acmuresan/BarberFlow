@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
+import { FeedbackService } from '../../core/services/feedback.service';
 
 @Component({
   selector: 'app-login',
@@ -13,14 +14,12 @@ import { AuthService } from '../../core/services/auth/auth.service';
 })
 export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
+  private fb = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private feedback = inject(FeedbackService);
+  private router = inject(Router);
   errorMessage: string = '';
   isLoading: boolean = false;
-
-  constructor(
-    private fb: FormBuilder,
-    private authService: AuthService,
-    private router: Router,
-  ) {}
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -37,19 +36,12 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: () => {
-        const user = this.authService.currentUser(); //Cambio: Lee el rol directamente del Signal recién actualizado
+        this.feedback.showToast('¡Bienvenido a BarberFlow!', 'success');
+        const user = this.authService.currentUser();
         const rol = user ? user.rol : null;
-
         this.redirigirSegunRol(rol);
       },
-      error: (err) => {
-        this.isLoading = false;
-        if (err.status === 401) {
-          this.errorMessage = 'Credenciales incorrectas. Inténtalo de nuevo.';
-        } else {
-          this.errorMessage = 'Error en el servidor. Inténtalo más tarde.';
-        }
-      },
+      // Si falla (401), el interceptor mostrará el toast rojo y parará el spinner. No hace falta manejarlo aqui
     });
   }
 
