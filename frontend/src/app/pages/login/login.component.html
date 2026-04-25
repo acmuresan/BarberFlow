@@ -1,16 +1,27 @@
 <div class="login-container">
   <h2>Iniciar Sesión en BarberFlow</h2>
 
-  <div *ngIf="errorMessage" class="alert alert-error">
+  <div *ngIf="errorMessage" class="alert alert-error" role="alert">
     {{ errorMessage }}
   </div>
 
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" aria-label="Formulario de inicio de sesión">
     <div class="form-group">
       <label for="email">Correo Electrónico</label>
-      <input id="email" type="email" formControlName="email" placeholder="ejemplo@correo.com" />
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="ejemplo@correo.com"
+        [attr.aria-invalid]="
+          loginForm.get('email')?.invalid && loginForm.get('email')?.touched ? 'true' : 'false'
+        "
+        aria-describedby="email-error"
+      />
       <small
+        id="email-error"
         class="error"
+        role="alert"
         *ngIf="loginForm.get('email')?.touched && loginForm.get('email')?.invalid"
       >
         Introduce un email válido.

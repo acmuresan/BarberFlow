@@ -1,11 +1,11 @@
 <div class="register-container">
   <h2>Crea tu cuenta en BarberFlow</h2>
 
-  <div *ngIf="errorMessage" class="alert alert-error">
+  <div *ngIf="errorMessage" class="alert alert-error" role="alert">
     {{ errorMessage }}
   </div>
 
-  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" aria-label="Formulario de registro">
     <div class="form-group">
       <label for="nombre">Nombre completo *</label>
       <input id="nombre" type="text" formControlName="nombre" placeholder="Juan Pérez" />
@@ -13,7 +13,26 @@
 
     <div class="form-group">
       <label for="email">Correo Electrónico *</label>
-      <input id="email" type="email" formControlName="email" placeholder="ejemplo@correo.com" />
+      <input
+        id="email"
+        type="email"
+        formControlName="email"
+        placeholder="ejemplo@correo.com"
+        [attr.aria-invalid]="
+          registerForm.get('email')?.invalid && registerForm.get('email')?.touched
+            ? 'true'
+            : 'false'
+        "
+        aria-describedby="register-email-error"
+      />
+      <small
+        id="register-email-error"
+        class="error"
+        role="alert"
+        *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.invalid"
+      >
+        Introduce un email válido.
+      </small>
     </div>
 
     <div class="form-group">
@@ -22,8 +41,22 @@
         id="password"
         type="password"
         formControlName="password"
-        placeholder="Mínimo 6 caracteres"
+        placeholder="Mínimo 1 caracteres"
+        [attr.aria-invalid]="
+          registerForm.get('password')?.invalid && registerForm.get('password')?.touched
+            ? 'true'
+            : 'false'
+        "
+        aria-describedby="register-password-error"
       />
+      <small
+        id="register-password-error"
+        class="error"
+        role="alert"
+        *ngIf="registerForm.get('password')?.touched && registerForm.get('password')?.invalid"
+      >
+        La contraseña debe tener al menos 1 caracteres.
+      </small>
     </div>
 
     <div class="form-group">

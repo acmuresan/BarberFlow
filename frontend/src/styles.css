@@ -1,1 +1,24 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-primary: #1a56db; /* Azul fuerte para botones*/
+  --text-main: #111827; /* Gris casi negro para legibilidad*/
+  --text-muted: #4b5563; /* Gris medio para labels*/
+
+  /*Colores de estado accesibles*/
+  --error-bg: #fef2f2;
+  --error-text: #b91c1c; /* Rojo oscuro pasa el contraste WCAG sobre el fondo claro*/
+}
+
+.error-text {
+  color: var(--error-text);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: block; /* Importante para que no colapse*/
+}
+
+/* Estilos globales para autenticación */
+.auth-container {
+  width: 100%;
+  max-width: 100vw;
+  padding: 1.5rem 1rem;
+  box-sizing: border-box;
+}
