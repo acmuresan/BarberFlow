@@ -10,6 +10,13 @@ import { RegisterComponent } from './pages/register/register.component';
 import { MisCitasComponent } from './pages/mis-citas/mis-citas.component';
 
 export const routes: Routes = [
+  //Ruta pública
+  {
+    path: 'panel-publico',
+    loadComponent: () =>
+      import('./pages/panel-publico/panel-publico.component').then((m) => m.PanelPublicoComponent),
+  },
+
   {
     path: 'panel-admin',
     component: PanelAdminComponent,

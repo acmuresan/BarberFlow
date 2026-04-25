@@ -1,1 +1,37 @@
-<p>panel-publico works!</p>
+<div class="panel-container">
+  <header class="text-center">
+    <h1>BarberFlow</h1>
+    <p class="subtitle">Estado en tiempo real</p>
+  </header>
+
+  <div *ngIf="loading" class="loading-state">
+    <p>Conectando con la barbería...</p>
+  </div>
+
+  <div *ngIf="error && !loading" class="error-state">
+    <p>⚠️ No se pudo obtener la información en este momento.</p>
+  </div>
+
+  <div *ngIf="!loading && !error && datos" class="datos-grid">
+    <div class="card">
+      <h3>Personas en Espera</h3>
+      <span class="numero-gigante">{{ datos.total_personas || 0 }}</span>
+    </div>
+
+    <div class="card">
+      <h3>Tiempo Estimado</h3>
+      <ng-container *ngIf="datos.tiempo_espera_estimado_min !== null; else sinEspera">
+        <span class="numero-gigante"
+          >{{ datos.tiempo_espera_estimado_min }} <small>min</small></span
+        >
+      </ng-container>
+      <ng-template #sinEspera>
+        <span class="texto-directo">¡Pásate ya!</span>
+      </ng-template>
+    </div>
+  </div>
+
+  <footer class="text-center">
+    <small>Actualizado automáticamente cada 30s</small>
+  </footer>
+</div>
