@@ -20,6 +20,8 @@ app.use("/api/walkins", routerWalkins);
 app.use("/api/panel", routerPanel);
 app.use("/api/barberos", routerBarberos);
 app.use("/api/servicios", routerServicios);
+app.use("/api/barberos", routerBarberos);
+app.use("/api/servicios", routerServicios);
 
 app.get("/api/health", (req, res) => {
   res.json({ success: true, message: "Servidor funcionando" });
