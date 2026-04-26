@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 23, 2026 at 07:54 PM
+-- Generation Time: Apr 26, 2026 at 07:41 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -42,7 +42,8 @@ CREATE TABLE `barberos` (
 
 INSERT INTO `barberos` (`id`, `nombre`, `especialidad`, `activo`, `created_at`, `usuario_id`) VALUES
 (1, 'Carlos', 'Corte clásico', 1, '2026-04-12 08:29:53', 1),
-(2, 'Javi', 'Barba y perfilado', 0, '2026-04-12 08:29:53', NULL);
+(2, 'Javi', 'Barba y perfilado', 0, '2026-04-12 08:29:53', NULL),
+(3, 'Pepe', 'Afeitado', 1, '2026-04-26 21:09:19', NULL);
 
 -- --------------------------------------------------------
 
@@ -73,7 +74,8 @@ INSERT INTO `citas` (`id`, `fecha_hora`, `fecha_hora_fin`, `estado`, `usuarios_i
 (5, '2026-04-20 11:30:00', '2026-04-20 12:00:00', 'pendiente', 1, 2, 1, '2026-04-15 20:16:39'),
 (6, '2026-04-15 20:40:00', '2026-04-15 21:10:00', 'pendiente', 1, 1, 1, '2026-04-15 20:36:39'),
 (7, '2026-04-15 21:00:00', '2026-04-15 21:30:00', 'pendiente', 1, 1, 1, '2026-04-15 20:48:07'),
-(8, '2026-04-28 17:00:00', '2026-04-28 17:30:00', 'pendiente', 2, 1, 1, '2026-04-23 21:38:29');
+(8, '2026-04-28 17:00:00', '2026-04-28 17:30:00', 'cancelada', 2, 1, 1, '2026-04-23 21:38:29'),
+(9, '2026-10-22 11:30:00', '2026-10-22 12:00:00', 'cancelada', 2, 1, 1, '2026-04-26 20:53:50');
 
 -- --------------------------------------------------------
 
@@ -86,17 +88,18 @@ CREATE TABLE `servicios` (
   `nombre` varchar(100) NOT NULL,
   `precio` decimal(10,2) NOT NULL,
   `duracion` int NOT NULL,
-  `created_at` datetime DEFAULT CURRENT_TIMESTAMP
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `activo` tinyint(1) DEFAULT '1'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
 -- Dumping data for table `servicios`
 --
 
-INSERT INTO `servicios` (`id`, `nombre`, `precio`, `duracion`, `created_at`) VALUES
-(1, 'Corte de pelo', 15.00, 30, '2026-04-12 08:29:53'),
-(2, 'Corte y barba', 25.00, 45, '2026-04-12 08:29:53'),
-(3, 'Afeitado', 10.00, 20, '2026-04-12 08:29:53');
+INSERT INTO `servicios` (`id`, `nombre`, `precio`, `duracion`, `created_at`, `activo`) VALUES
+(1, 'Corte de pelo', 15.00, 30, '2026-04-12 08:29:53', 1),
+(2, 'Corte y barba', 25.00, 45, '2026-04-12 08:29:53', 1),
+(3, 'Afeitado', 15.00, 25, '2026-04-12 08:29:53', 1);
 
 -- --------------------------------------------------------
 
@@ -124,7 +127,8 @@ INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `rol`, 
 (3, 'Admin', 'admin@gmail.com', '$2b$10$efFAO2oqFJuItHjw15wWNeYJLURojtq5IW124K6RhXE...', NULL, 'admin', '2026-04-15 19:58:20'),
 (4, 'Admin', 'admin@barberflow.com', '$2b$10$wk7TJMKuOLQugQKIjvQY1ueU3Dfbiln/jv3tcw/25q4mVWqaVgw5e', NULL, 'admin', '2026-04-15 19:59:35'),
 (5, 'Marta', 'm@gmail.com', '$2b$10$k4S2TvG0Twz7xpS6B.ag4.zEv7VETSqmA5WQp0w/dV/U6SEYr08I.', NULL, 'cliente', '2026-04-18 10:36:34'),
-(6, 'cliente', 'cliente@gmail.com', '$2b$10$8LKcRu7XHPyNl4iO2.u1qOUAOBCnjMWgNa4fqO7jmvdtPHDtpvwKe', NULL, 'cliente', '2026-04-18 10:50:53');
+(6, 'cliente', 'cliente@gmail.com', '$2b$10$8LKcRu7XHPyNl4iO2.u1qOUAOBCnjMWgNa4fqO7jmvdtPHDtpvwKe', NULL, 'cliente', '2026-04-18 10:50:53'),
+(7, 'ASD', 'ASD@test.com', '$2b$10$3vkWeXx4QEXIh4ANiYykJOwCdypTrxt5aIzNkRBkXrC1LVS4BVde6', NULL, 'cliente', '2026-04-26 20:31:21');
 
 -- --------------------------------------------------------
 
@@ -196,13 +200,13 @@ ALTER TABLE `walkins`
 -- AUTO_INCREMENT for table `barberos`
 --
 ALTER TABLE `barberos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `servicios`
@@ -214,7 +218,7 @@ ALTER TABLE `servicios`
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `walkins`
