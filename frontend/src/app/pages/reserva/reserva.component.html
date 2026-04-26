@@ -1,7 +1,14 @@
 <div class="wizard-container">
-  <div class="progress-header">
+  <div class="progress-header flex-mobile-col">
     <p>Paso {{ currentStep }} de {{ totalSteps }}</p>
-    <div class="progress-bar">
+    <div
+      class="progress-bar"
+      role="progressbar"
+      [attr.aria-valuenow]="currentStep"
+      aria-valuemin="1"
+      [attr.aria-valuemax]="totalSteps"
+      [attr.aria-label]="'Paso ' + currentStep + ' de ' + totalSteps"
+    >
       <div class="progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
     </div>
   </div>
@@ -16,6 +23,7 @@
           *ngFor="let servicio of servicios"
           class="card-option"
           [class.selected]="selectedServicio?.id === servicio.id"
+          [attr.aria-pressed]="selectedServicio?.id === servicio.id ? 'true' : 'false'"
           (click)="seleccionarServicio(servicio)"
         >
           <span class="name">{{ servicio.nombre }}</span>
@@ -39,6 +47,7 @@
           *ngFor="let barbero of barberos"
           class="card-option"
           [class.selected]="selectedBarbero?.id === barbero.id"
+          [attr.aria-pressed]="selectedBarbero?.id === barbero.id ? 'true' : 'false'"
           (click)="seleccionarBarbero(barbero)"
         >
           <span class="name">{{ barbero.nombre }}</span>
@@ -66,27 +75,44 @@
           [disabled]="
             viewDate.getMonth() === hoy.getMonth() && viewDate.getFullYear() === hoy.getFullYear()
           "
-        ></button>
-        <span>{{ viewDate | date: 'MMMM yyyy' | titlecase }}</span>
-        <button (click)="cambiarMes(1)">></button>
+          aria-label="Mes anterior"
+        >
+          <
+        </button>
+        <span aria-live="polite">{{ viewDate | date: 'MMMM yyyy' | titlecase }}</span>
+        <button (click)="cambiarMes(1)" aria-label="Mes siguiente">></button>
       </div>
 
       <div class="calendar-grid">
-        <div class="day-label" *ngFor="let d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']">{{ d }}</div>
+        <div
+          class="day-label"
+          *ngFor="let d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
+          aria-hidden="true"
+        >
+          {{ d }}
+        </div>
 
         <div
           *ngFor="let dia of diasDelMes"
           class="day-cell"
+          role="button"
+          [attr.tabindex]="esFechaPasada(dia) ? -1 : 0"
           [class.disabled]="esFechaPasada(dia)"
+          [attr.aria-disabled]="esFechaPasada(dia) ? 'true' : null"
           [class.selected]="selectedFecha?.toDateString() === dia.toDateString()"
+          [attr.aria-pressed]="
+            selectedFecha?.toDateString() === dia.toDateString() ? 'true' : 'false'
+          "
           (click)="seleccionarFecha(dia)"
+          (keyup.enter)="seleccionarFecha(dia)"
+          (keyup.space)="seleccionarFecha(dia); $event.preventDefault()"
         >
           {{ dia | date: 'd' }}
         </div>
       </div>
     </div>
 
-    <div class="selection-info" *ngIf="selectedFecha">
+    <div class="selection-info" *ngIf="selectedFecha" aria-live="polite">
       Has elegido el: <strong>{{ selectedFecha | date: 'fullDate' }}</strong>
     </div>
 
@@ -106,6 +132,7 @@
         *ngFor="let hora of horasDisponibles"
         class="time-slot"
         [class.selected]="selectedHora === hora"
+        [attr.aria-pressed]="selectedHora === hora ? 'true' : 'false'"
         (click)="selectedHora = hora"
       >
         {{ hora }}
@@ -145,6 +172,6 @@
   </section>
 
   <ng-template #loading>
-    <div class="spinner">Cargando opciones...</div>
+    <div class="spinner" role="status" aria-live="polite">Cargando opciones...</div>
   </ng-template>
 </div>

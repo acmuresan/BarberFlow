@@ -12,22 +12,25 @@
     <p>⚠️ No se pudo obtener la información en este momento.</p>
   </div>
 
-  <div *ngIf="!loading && !error && datos" class="datos-grid">
+  <div *ngIf="!loading && !error && datos" class="datos-grid" aria-live="polite">
     <div class="card">
-      <h3>Personas en Espera</h3>
-      <span class="numero-gigante">{{ datos.total_personas || 0 }}</span>
+      <h3 id="label-personas">Personas en Espera</h3>
+      <span class="numero-gigante" aria-labelledby="label-personas">
+        {{ datos.total_personas || 0 }}
+      </span>
     </div>
 
     <div class="card">
-      <h3>Tiempo Estimado</h3>
+      <h3 id="label-tiempo">Tiempo Estimado</h3>
       <ng-container *ngIf="datos.tiempo_espera_estimado_min !== null; else sinEspera">
-        <span class="numero-gigante"
-          >{{ datos.tiempo_espera_estimado_min }} <small>min</small></span
-        >
+        <span class="numero-gigante" aria-labelledby="label-tiempo">
+          {{ datos.tiempo_espera_estimado_min }} <span class="visually-hidden">minutos</span>
+        </span>
       </ng-container>
       <ng-template #sinEspera>
         <span class="texto-directo">¡Pásate ya!</span>
       </ng-template>
+    </div>
     </div>
   </div>
 
