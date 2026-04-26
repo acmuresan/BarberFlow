@@ -3,11 +3,14 @@ import { CommonModule } from '@angular/common';
 import { CitasService } from '../../core/services/citas.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { FeedbackService } from '../../core/services/feedback.service';
+import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-mis-citas',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
   templateUrl: './mis-citas.component.html',
-  styleUrls: ['./mis-citas.component.scss'],
+  styleUrls: ['./mis-citas.component.css'],
 })
 export class MisCitasComponent implements OnInit {
   private citasService = inject(CitasService);
@@ -15,6 +18,7 @@ export class MisCitasComponent implements OnInit {
   private authService = inject(AuthService);
 
   citas: any[] = [];
+  isLoading = true;
 
   // Signal para controlar el modal. Si tiene un número (ID), el modal se abre. Si es null, se cierra.
   citaACancelar = signal<number | null>(null);
@@ -26,11 +30,18 @@ export class MisCitasComponent implements OnInit {
   cargarCitas(): void {
     const user = this.authService.currentUser();
     if (!user || !user.usuario_id) {
+      this.isLoading = false;
       return;
     }
-    this.citasService.getCitasByUsuario(user.usuario_id).subscribe({
+    this.citasService.getCitasByUsuario(user.usuario_id.toString()).subscribe({
       next: (res) => {
         this.citas = res.data;
+        this.isLoading = false;
+      },
+      error: () => {
+        // Se apga el loading
+        this.isLoading = false;
+        this.feedback.showToast('Error al cargar tus citas. Inténtalo de nuevo.', 'error');
       },
       // El error de carga lo notifica el Interceptor
     });
@@ -59,6 +70,7 @@ export class MisCitasComponent implements OnInit {
         this.feedback.showToast('Cita cancelada correctamente', 'success');
         this.cerrarModal(); // Cerramos el modal tras el éxito
       },
+      error: () => this.cerrarModal(),
     });
   }
 

@@ -12,7 +12,7 @@ import { BarberoModel } from '../../core/models/barbero.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './panel-admin.component.html',
-  styleUrls: ['./panel-admin.component.scss'],
+  styleUrls: ['./panel-admin.component.css'],
 })
 export class PanelAdminComponent implements OnInit {
   barberos: BarberoModel[] = [];

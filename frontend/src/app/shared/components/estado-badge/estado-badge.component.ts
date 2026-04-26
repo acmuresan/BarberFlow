@@ -23,7 +23,7 @@ interface EstadoConfig {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './estado-badge.component.html',
-  styleUrls: ['./estado-badge.component.scss'],
+  styleUrls: ['./estado-badge.component.css'],
 })
 export class EstadoBadgeComponent implements OnInit {
   // Recibimos el estado desde el componente padre (ej. PanelBarberoComponent)

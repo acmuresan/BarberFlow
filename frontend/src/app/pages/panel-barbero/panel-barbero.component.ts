@@ -11,8 +11,8 @@ import { FeedbackService } from '../../core/services/feedback.service';
   standalone: true,
   imports: [CommonModule],
   providers: [DatePipe],
-  templateUrl: './barbero-panel.component.html',
-  styleUrls: ['./barbero-panel.component.css'],
+  templateUrl: './panel-barbero.component.html',
+  styleUrls: ['./panel-barbero.component.css'],
 })
 export class BarberoPanelComponent implements OnInit {
   private barberoService = inject(BarberosService);

@@ -1,4 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 
@@ -13,8 +14,10 @@ import { BarberoModel } from '../../core/models/barbero.model';
 
 @Component({
   selector: 'app-reserva',
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './reserva.component.html',
-  styleUrls: ['./reserva.component.scss'],
+  styleUrls: ['./reserva.component.css'],
 })
 export class ReservaComponent implements OnInit {
   private serviciosService = inject(ServiciosService);

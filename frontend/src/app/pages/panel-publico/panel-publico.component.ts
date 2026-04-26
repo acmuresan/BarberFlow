@@ -8,7 +8,7 @@ import { PanelPublicoService, PanelPublicoData } from '../../core/services/panel
   standalone: true,
   imports: [CommonModule],
   templateUrl: './panel-publico.component.html',
-  styleUrls: ['./panel-publico.component.scss'],
+  styleUrls: ['./panel-publico.component.css'],
 })
 export class PanelPublicoComponent implements OnInit, OnDestroy {
   private panelService = inject(PanelPublicoService);

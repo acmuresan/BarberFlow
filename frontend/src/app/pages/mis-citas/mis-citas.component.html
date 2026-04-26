@@ -3,15 +3,13 @@
 
   <div *ngIf="isLoading" class="loading">Cargando tus citas...</div>
 
-  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
-
   <div *ngIf="!isLoading && citas.length === 0" class="empty-state">
     <div class="icon">📅</div>
     <p>Aún no tienes ninguna cita programada.</p>
     <button routerLink="/reserva" class="btn-primary">Reservar mi primera cita</button>
   </div>
 
-  <div class="citas-list" *ngIf="citas.length > 0">
+  <div class="citas-list" *ngIf="!isLoading && citas.length > 0">
     <div class="cita-card" *ngFor="let cita of citas">
       <div class="cita-header">
         <span [ngClass]="['status-chip', getEstadoClass(cita.estado)]">
@@ -27,7 +25,20 @@
       </div>
 
       <div class="cita-footer" *ngIf="cita.estado === 'pendiente'">
-        <button (click)="cancelarCita(cita.id)" class="btn-outline-danger">Cancelar Cita</button>
+        <button (click)="pedirConfirmacion(cita.id)" class="btn-outline-danger">
+          Cancelar Cita
+        </button>
+      </div>
+    </div>
+  </div>
+  <div class="modal-overlay" *ngIf="citaACancelar() !== null">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <h3 id="modal-title">¿Cancelar reserva?</h3>
+      <p>Esta acción no se puede deshacer y perderás tu turno.</p>
+
+      <div class="modal-actions">
+        <button (click)="cerrarModal()" class="btn-secondary">Volver</button>
+        <button (click)="cancelarCita()" class="btn-danger">Sí, cancelar</button>
       </div>
     </div>
   </div>
