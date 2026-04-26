@@ -154,11 +154,13 @@ export async function getCitasCliente(
   }
 }
 
+// Actualización del estado
 export async function actualizarEstadoCita(
   cita_id: number,
   nuevo_estado: string,
 ): Promise<{ ok: true } | { error: string; status: number }> {
   try {
+    // Solo aceptamos los estados que define la BD
     const ESTADOS_VALIDOS = [
       "pendiente",
       "confirmada",
@@ -184,6 +186,7 @@ export async function actualizarEstadoCita(
       cita_id,
     ]);
 
+    // Si la cita se confirma mandamos el email al cliente con los datos de la cita
     if (nuevo_estado === "confirmada") {
       const [datosEmail] = await pool.execute<EmailRow[]>(
         `SELECT u.nombre, u.email, b.nombre AS barbero_nombre,
@@ -204,6 +207,60 @@ export async function actualizarEstadoCita(
     }
 
     return { ok: true };
+  } catch (error) {
+    return { error: "Error interno del servidor", status: 500 };
+  }
+}
+
+// Devuelve todas las citas existentes con datos de cliente, barbero y servicio
+export async function getCitasAdmin(): Promise<
+  RowDataPacket[] | { error: string; status: number }
+> {
+  try {
+    const [citas] = await pool.execute<RowDataPacket[]>(
+      `SELECT citas.id,
+          citas.fecha_hora,
+          citas.estado,
+          usuarios.nombre AS cliente_nombre,
+          barberos.nombre AS barbero_nombre,
+          servicios.nombre AS servicio_nombre,
+          servicios.precio,
+          servicios.duracion
+   FROM citas
+   JOIN usuarios  ON citas.usuarios_id  = usuarios.id
+   JOIN barberos  ON citas.barberos_id  = barberos.id
+   JOIN servicios ON citas.servicios_id = servicios.id
+   ORDER BY citas.fecha_hora DESC`,
+    );
+
+    return citas;
+  } catch (error) {
+    return { error: "Error interno del servidor", status: 500 };
+  }
+}
+
+// Devuelve las citas de un barbero concreto filtradas por su id
+export async function getCitasBarbero(
+  barbero_id: number,
+): Promise<RowDataPacket[] | { error: string; status: number }> {
+  try {
+    const [citas] = await pool.execute<RowDataPacket[]>(
+      `SELECT citas.id,
+        citas.fecha_hora,
+        citas.estado,
+        usuarios.nombre AS cliente_nombre,
+        servicios.nombre AS servicio_nombre,
+        servicios.precio,
+        servicios.duracion
+       FROM citas
+       JOIN usuarios  ON citas.usuarios_id  = usuarios.id
+       JOIN servicios ON citas.servicios_id = servicios.id
+       WHERE citas.barberos_id = ?
+       ORDER BY citas.fecha_hora DESC`,
+      [barbero_id],
+    );
+
+    return citas;
   } catch (error) {
     return { error: "Error interno del servidor", status: 500 };
   }
