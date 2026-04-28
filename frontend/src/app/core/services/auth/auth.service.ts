@@ -15,7 +15,7 @@ export interface UserSession {
   providedIn: 'root',
 })
 export class AuthService {
-  private authUrl = `${environment.apiUrl}/api/auth`; // La base de auth en el backend es /api/auth
+  private authUrl = `${environment.apiUrl}/auth`; // La base de auth en el backend es /api/auth
   private http = inject(HttpClient); //Uso de inject() en lugar del constructor
   // SIGNAL: Fuente de la verdad reactiva para toda la app
   public currentUser = signal<UserSession | null>(this.loadInitialSession());
@@ -69,6 +69,7 @@ export class AuthService {
   logout() {
     localStorage.removeItem('session');
     localStorage.clear(); // Borra todo (token, rol, id)
+    this.currentUser.set(null);
   }
 
   private handleError(error: HttpErrorResponse) {

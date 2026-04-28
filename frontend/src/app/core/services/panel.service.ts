@@ -8,7 +8,7 @@ import { Observable } from 'rxjs';
 })
 export class PanelService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/panel/hoy`;
+  private apiUrl = `${environment.apiUrl}/panel/hoy`;
 
   // Para la petición HTTP
   getPanelInfo(): Observable<any> {

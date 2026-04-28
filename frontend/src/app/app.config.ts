@@ -9,7 +9,7 @@ import { feedbackInterceptor } from './core/interceptors/feedback.interceptor';
 export const appConfig: ApplicationConfig = {
   providers: [
     provideRouter(routes),
-    //Habilitamos HttpClient y le decimos que acepte interceptores basados en clases
+    //Habilitamos HttpClient y le decimos que acepte interceptores funcionales
     provideHttpClient(withInterceptors([jwtInterceptor, feedbackInterceptor])),
     provideBrowserGlobalErrorListeners(),
   ],

@@ -15,6 +15,6 @@ export class PanelPublicoService {
   private http = inject(HttpClient);
 
   getDatosPanel(): Observable<PanelPublicoData> {
-    return this.http.get<PanelPublicoData>(`${environment.apiUrl}/api/panel/publico`);
+    return this.http.get<PanelPublicoData>(`${environment.apiUrl}/panel/publico`);
   }
 }

@@ -33,8 +33,8 @@
       <input id="password" type="password" formControlName="password" placeholder="Tu contraseña" />
     </div>
 
-    <button type="submit" [disabled]="loginForm.invalid || isLoading">
-      {{ isLoading ? 'Cargando...' : 'Entrar' }}
+    <button type="submit" [disabled]="loginForm.invalid || isLoading()">
+      {{ isLoading() ? 'Cargando...' : 'Entrar' }}
     </button>
   </form>
 

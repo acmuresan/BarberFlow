@@ -1,29 +1,36 @@
-<div class="wizard-container">
-  <div class="progress-header flex-mobile-col">
-    <p>Paso {{ currentStep }} de {{ totalSteps }}</p>
-    <div
-      class="progress-bar"
-      role="progressbar"
-      [attr.aria-valuenow]="currentStep"
-      aria-valuemin="1"
-      [attr.aria-valuemax]="totalSteps"
-      [attr.aria-label]="'Paso ' + currentStep + ' de ' + totalSteps"
+<div class="wizard-container" aria-label="Asistente de reservas">
+  <header class="wizard-header">
+    <button
+      routerLink="/mis-citas"
+      class="btn-cancelar"
+      aria-label="Cancelar reserva y volver a mis citas"
     >
-      <div class="progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+      ← Volver
+    </button>
+    <div class="progress-header flex-mobile-col">
+      <p aria-live="polite">Paso {{ currentStep }} de {{ totalSteps }}</p>
+      <div
+        class="progress-bar"
+        role="progressbar"
+        [attr.aria-valuenow]="currentStep"
+        aria-valuemin="1"
+        [attr.aria-valuemax]="totalSteps"
+      >
+        <div class="progress-fill" [style.width.%]="(currentStep / totalSteps) * 100"></div>
+      </div>
     </div>
-  </div>
+  </header>
 
   <!--Selección de servicio-->
   <section *ngIf="currentStep === 1" class="step-content animate-fade-in">
     <h2>¿Qué te vas a hacer hoy?</h2>
-
     <div class="options-list">
       <ng-container *ngIf="servicios$ | async as servicios; else loading">
         <button
           *ngFor="let servicio of servicios"
           class="card-option"
           [class.selected]="selectedServicio?.id === servicio.id"
-          [attr.aria-pressed]="selectedServicio?.id === servicio.id ? 'true' : 'false'"
+          [attr.aria-pressed]="selectedServicio?.id === servicio.id"
           (click)="seleccionarServicio(servicio)"
         >
           <span class="name">{{ servicio.nombre }}</span>
@@ -31,7 +38,6 @@
         </button>
       </ng-container>
     </div>
-
     <button class="btn-primary" [disabled]="!selectedServicio" (click)="nextStep()">
       Siguiente
     </button>
@@ -40,14 +46,13 @@
   <!--Selección de barbero-->
   <section *ngIf="currentStep === 2" class="step-content animate-fade-in">
     <h2>Elige a tu barbero</h2>
-
     <div class="options-list">
       <ng-container *ngIf="barberos$ | async as barberos; else loading">
         <button
           *ngFor="let barbero of barberos"
           class="card-option"
           [class.selected]="selectedBarbero?.id === barbero.id"
-          [attr.aria-pressed]="selectedBarbero?.id === barbero.id ? 'true' : 'false'"
+          [attr.aria-pressed]="selectedBarbero?.id === barbero.id"
           (click)="seleccionarBarbero(barbero)"
         >
           <span class="name">{{ barbero.nombre }}</span>
@@ -55,7 +60,6 @@
         </button>
       </ng-container>
     </div>
-
     <div class="action-buttons">
       <button class="btn-secondary" (click)="prevStep()">Atrás</button>
       <button class="btn-primary" [disabled]="!selectedBarbero" (click)="nextStep()">
@@ -83,7 +87,7 @@
         <button (click)="cambiarMes(1)" aria-label="Mes siguiente">></button>
       </div>
 
-      <div class="calendar-grid">
+      <div class="calendar-grid" role="grid">
         <div
           class="day-label"
           *ngFor="let d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
@@ -95,19 +99,18 @@
         <div
           *ngFor="let dia of diasDelMes"
           class="day-cell"
-          role="button"
-          [attr.tabindex]="esFechaPasada(dia) ? -1 : 0"
-          [class.disabled]="esFechaPasada(dia)"
-          [attr.aria-disabled]="esFechaPasada(dia) ? 'true' : null"
-          [class.selected]="selectedFecha?.toDateString() === dia.toDateString()"
-          [attr.aria-pressed]="
-            selectedFecha?.toDateString() === dia.toDateString() ? 'true' : 'false'
-          "
+          role="gridcell"
+          [class.empty-cell]="!dia"
+          [class.disabled]="dia && esFechaPasada(dia)"
+          [class.selected]="dia && selectedFecha?.toDateString() === dia.toDateString()"
+          [attr.tabindex]="!dia || esFechaPasada(dia) ? -1 : 0"
           (click)="seleccionarFecha(dia)"
           (keyup.enter)="seleccionarFecha(dia)"
           (keyup.space)="seleccionarFecha(dia); $event.preventDefault()"
         >
-          {{ dia | date: 'd' }}
+          <ng-container *ngIf="dia">
+            {{ dia | date: 'd' }}
+          </ng-container>
         </div>
       </div>
     </div>
@@ -124,20 +127,24 @@
     </div>
   </section>
 
-  <!--Selección de hora-->
   <section *ngIf="currentStep === 4" class="step-content animate-fade-in">
     <h2>¿A qué hora te viene bien?</h2>
-    <div class="time-grid">
+
+    <div class="time-grid" role="listbox" aria-label="Selección de horas">
       <button
         *ngFor="let hora of horasDisponibles"
+        role="option"
         class="time-slot"
+        [disabled]="esHoraPasada(hora)"
+        [class.disabled-time]="esHoraPasada(hora)"
         [class.selected]="selectedHora === hora"
-        [attr.aria-pressed]="selectedHora === hora ? 'true' : 'false'"
+        [attr.aria-selected]="selectedHora === hora"
         (click)="selectedHora = hora"
       >
         {{ hora }}
       </button>
     </div>
+
     <div class="action-buttons">
       <button class="btn-secondary" (click)="prevStep()">Atrás</button>
       <button class="btn-primary" [disabled]="!selectedHora" (click)="nextStep()">Siguiente</button>
@@ -165,7 +172,7 @@
         <span>Total:</span> <strong>{{ selectedServicio?.precio }}€</strong>
       </div>
     </div>
-    <div class="action-buttons">
+    <div class="action-buttons flex-mobile-col">
       <button class="btn-secondary" (click)="prevStep()">Corregir</button>
       <button class="btn-confirm" (click)="confirmarReserva()">CONFIRMAR Y RESERVAR</button>
     </div>

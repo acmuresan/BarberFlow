@@ -1,9 +1,11 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { FeedbackService } from '../../core/services/feedback.service';
+
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-login',
@@ -19,7 +21,7 @@ export class LoginComponent implements OnInit {
   private feedback = inject(FeedbackService);
   private router = inject(Router);
   errorMessage: string = '';
-  isLoading: boolean = false;
+  isLoading = signal<boolean>(false);
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -31,20 +33,30 @@ export class LoginComponent implements OnInit {
   onSubmit(): void {
     if (this.loginForm.invalid) return;
 
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.errorMessage = '';
 
-    this.authService.login(this.loginForm.value).subscribe({
-      next: () => {
-        this.feedback.showToast('¡Bienvenido a BarberFlow!', 'success');
-        const user = this.authService.currentUser();
-        const rol = user ? user.rol : null;
-        this.redirigirSegunRol(rol);
-      },
-      // Si falla (401), el interceptor mostrará el toast rojo y parará el spinner. No hace falta manejarlo aqui
-    });
+    this.authService
+      .login(this.loginForm.value)
+      .pipe(
+        // finalize apaga el loader sin importar si da 200 o 401
+        finalize(() => this.isLoading.set(false)),
+      )
+      .subscribe({
+        next: () => {
+          this.feedback.showToast('¡Bienvenido a BarberFlow!', 'success');
+          const user = this.authService.currentUser();
+          this.redirigirSegunRol(user?.rol || null);
+        },
+        error: (err) => {
+          if (err.status === 401) {
+            this.errorMessage = 'Credenciales incorrectas. Revisa tu email y contraseña.';
+          } else {
+            this.errorMessage = 'Error de conexión con el servidor.';
+          }
+        },
+      });
   }
-
   private redirigirSegunRol(rol: string | null): void {
     switch (rol) {
       case 'admin':

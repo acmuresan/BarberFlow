@@ -7,13 +7,18 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root',
 })
 export class CitasService {
-  private apiUrl = `${environment.apiUrl}/api/citas`;
+  private apiUrl = `${environment.apiUrl}/citas`;
 
   constructor(private http: HttpClient) {}
 
   // Obtener citas de un usuario específico
   getCitasByUsuario(usuarioId: number | string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${usuarioId}`);
+  }
+
+  // GET /api/citas (Requiere JWT de Admin)
+  getAllCitas(): Observable<any> {
+    return this.http.get(this.apiUrl);
   }
 
   // Cambiar estado (Cancelar)

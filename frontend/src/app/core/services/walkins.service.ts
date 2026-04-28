@@ -8,7 +8,7 @@ import { environment } from '../../../environments/environment';
 })
 export class WalkinsService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/api/walkins`;
+  private apiUrl = `${environment.apiUrl}/walkins`;
 
   /**
    * Registra un nuevo cliente sin cita (Walk-in) en la cola

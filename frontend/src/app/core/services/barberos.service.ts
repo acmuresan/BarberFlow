@@ -16,9 +16,8 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class BarberosService {
-  //private apiUrl = `${environment.apiUrl}/api/barberos`;
   private http = inject(HttpClient);
-  private apiBase = `${environment.apiUrl}/api`;
+  private apiBase = `${environment.apiUrl}`;
   private barberosUrl = `${this.apiBase}/barberos`;
 
   // Obtener solo activos (para clientes/panel público)
@@ -31,27 +30,30 @@ export class BarberosService {
   // Obtener todos (incluyendo inactivos) para el Panel Admin
   getAll(): Observable<BarberoModel[]> {
     return this.http
-      .get<ApiResponse<BarberoModel[]>>(this.barberosUrl)
+      .get<ApiResponse<BarberoModel[]>>(`${this.barberosUrl}/admin/todos`)
       .pipe(map((response) => response.data));
   }
 
-  // Crear un nuevo barbero
   create(barbero: Partial<BarberoModel>): Observable<BarberoModel> {
     return this.http
       .post<ApiResponse<BarberoModel>>(this.barberosUrl, barbero)
       .pipe(map((response) => response.data));
   }
 
-  // Actualizar o hacer soft-delete (ej. enviando { activo: 0 })
+  // Actualizar o hacer soft-delete (ej: enviando { activo: 0 })
   update(id: number, barbero: Partial<BarberoModel>): Observable<BarberoModel> {
     return this.http
       .patch<ApiResponse<BarberoModel>>(`${this.barberosUrl}/${id}`, barbero)
       .pipe(map((response) => response.data));
   }
 
-  //Métodos pata el panel Barbero
+  // Decisión: soft-delete en lugar de borrado físico para preservar historial de citas
+  toggleActivo(id: number, activo: boolean): Observable<any> {
+    return this.http
+      .patch<ApiResponse<any>>(`${this.barberosUrl}/${id}/activo`, { activo: activo ? 1 : 0 })
+      .pipe(map((response) => response.data));
+  }
 
-  // Citas del día para el barbero logueado
   getCitasHoy(barberoId: number): Observable<any> {
     return this.http
       .get<ApiResponse<any>>(`${this.apiBase}/citas/barbero/${barberoId}`)
@@ -65,7 +67,6 @@ export class BarberosService {
       .pipe(map((response) => response.data));
   }
 
-  // Cambio de estado de un walk-in desde el panel del barbero
   updateWalkinEstado(
     id: number,
     estado: 'atendiendo' | 'completado' | 'cancelado',

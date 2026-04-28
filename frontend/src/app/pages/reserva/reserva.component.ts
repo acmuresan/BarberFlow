@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth/auth.service';
 import { FeedbackService } from '../../core/services/feedback.service';
@@ -15,7 +15,7 @@ import { BarberoModel } from '../../core/models/barbero.model';
 @Component({
   selector: 'app-reserva',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './reserva.component.html',
   styleUrls: ['./reserva.component.css'],
 })
@@ -35,11 +35,11 @@ export class ReservaComponent implements OnInit {
   hoy: Date = new Date();
 
   selectedHora: string | null = null;
-  horasDisponibles: string[] = ['09:00', '10:00', '11:30', '12:30', '16:00', '17:30'];
+  horasDisponibles: string[] = ['09:00', '10:00', '11:00', '12:00', '16:00', '17:00'];
 
   // Para la lógica del calendario
   viewDate: Date = new Date(); // Fecha que determina que mes vemos
-  diasDelMes: Date[] = [];
+  diasDelMes: (Date | null)[] = [];
 
   // Observables para la vista
   servicios$!: Observable<ServicioModel[]>;
@@ -76,7 +76,12 @@ export class ReservaComponent implements OnInit {
     // Último día del mes
     const lastDay = new Date(year, month + 1, 0);
 
-    this.diasDelMes = [];
+    // En JS getDay() el Domingo es 0. Lo transformamos para que Lunes sea 0 y Domingo 6
+    let startDay = firstDay.getDay() - 1;
+    if (startDay === -1) startDay = 6;
+
+    // Se rellenan los huecos vacíos al principio del mes con null
+    this.diasDelMes = Array(startDay).fill(null);
 
     // Rellenamos el array de fechas
     for (let i = 1; i <= lastDay.getDate(); i++) {
@@ -84,15 +89,35 @@ export class ReservaComponent implements OnInit {
     }
   }
 
-  esFechaPasada(fecha: Date): boolean {
+  esFechaPasada(fecha: Date | null): boolean {
+    if (!fecha) return true;
     const f = new Date(fecha);
-    f.setHours(23, 59, 59); // Margen para el día de hoy
+    f.setHours(23, 59, 59);
     return f < this.hoy;
   }
 
-  seleccionarFecha(fecha: Date) {
-    if (this.esFechaPasada(fecha)) return;
+  seleccionarFecha(fecha: Date | null) {
+    if (!fecha || this.esFechaPasada(fecha)) return;
     this.selectedFecha = fecha;
+    this.selectedHora = null; // Resetea la hora si cambia de día
+  }
+
+  // SOLUCIÓN BUG HORAS PASADAS
+  esHoraPasada(horaStr: string): boolean {
+    if (!this.selectedFecha) return true;
+
+    // Si la fecha seleccionada no es hoy, no se bloquean las horas (salvo que sea un dia anterior que ya este bloqueado)
+    if (this.selectedFecha.toDateString() !== this.hoy.toDateString()) {
+      return false;
+    }
+
+    // Si es hoy, compara minutos y horas
+    const [horas, minutos] = horaStr.split(':').map(Number);
+    const fechaAComparar = new Date();
+    fechaAComparar.setHours(horas, minutos, 0, 0);
+
+    // Bloquea si la hora ya pasó
+    return fechaAComparar <= this.hoy;
   }
 
   cambiarMes(delta: number) {
@@ -109,26 +134,41 @@ export class ReservaComponent implements OnInit {
     )
       return;
 
-    // Uso del operador '?.' por seguridad
     const user = this.authService.currentUser();
+    if (!user) return; // Fallback de seguridad
 
-    if (!user) {
-      alert('Error de sesión. Vuelve a iniciar sesión');
-      return;
-    }
-    // Construimos el objeto
+    const year = this.selectedFecha.getFullYear();
+    const month = String(this.selectedFecha.getMonth() + 1).padStart(2, '0');
+    const day = String(this.selectedFecha.getDate()).padStart(2, '0');
+    const fechaLocal = `${year}-${month}-${day}`;
+
     const bodyCita = {
-      usuario_id: user.usuario_id, // Extraído de la RAM en lugar de localStorage
+      usuario_id: user.usuario_id,
       barbero_id: this.selectedBarbero.id,
       servicio_id: this.selectedServicio.id,
-      fecha_hora: `${this.selectedFecha.toISOString().split('T')[0]}T${this.selectedHora}:00`,
+      fecha_hora: `${fechaLocal}T${this.selectedHora}:00`,
     };
 
+    // Se envía la petición
     this.citasService.crearCita(bodyCita).subscribe({
       next: () => {
-        // Solo se maneja el caso de éxito, El loading y el error ahora los gestiona el Interceptor
-        this.feedback.showToast('¡Reserva confirmada con éxito!', 'success');
+        this.feedback.showToast('¡Reserva realizada con éxito!', 'success');
         this.router.navigate(['/mis-citas']);
+      },
+      error: (err: any) => {
+        console.error('Error del servidor:', err);
+
+        if (err.status === 409) {
+          this.feedback.showToast(
+            '¡Vaya! Alguien acaba de reservar a esa misma hora. Por favor, elige otra.',
+            'error',
+          );
+          this.currentStep = 4; // Devuelve al cliente a la pantalla de hora
+          this.selectedHora = null; // Fuerza a que elija de nuevo
+        } else {
+          const mensajeError = err.error?.error || 'Error al procesar tu reserva.';
+          this.feedback.showToast(mensajeError, 'error');
+        }
       },
     });
   }
@@ -136,6 +176,8 @@ export class ReservaComponent implements OnInit {
   nextStep(): void {
     if (this.currentStep === 1 && !this.selectedServicio) return;
     if (this.currentStep === 2 && !this.selectedBarbero) return;
+    if (this.currentStep === 3 && !this.selectedFecha) return;
+    if (this.currentStep === 4 && !this.selectedHora) return;
     this.currentStep++;
   }
 

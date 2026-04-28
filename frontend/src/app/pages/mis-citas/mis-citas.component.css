@@ -1,3 +1,22 @@
+.page-header {
+  display: flex;
+  justify-content: space-between; /* Separa el título a la izquierda y el botón a la derecha */
+  align-items: center; /* Para centrar verticalmente */
+  margin-bottom: 1.5rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  white-space: nowrap; /* Evita que el texto del botón se parta en dos líneas en móviles pequeños */
+}
+
 .status-chip {
   padding: 4px 12px;
   border-radius: 16px;

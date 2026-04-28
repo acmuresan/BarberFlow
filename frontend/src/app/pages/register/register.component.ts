@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
+import { FeedbackService } from '../../core/services/feedback.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-register',
@@ -14,12 +16,13 @@ import { AuthService } from '../../core/services/auth/auth.service';
 export class RegisterComponent implements OnInit {
   registerForm!: FormGroup;
   errorMessage: string = '';
-  isLoading: boolean = false;
+  isLoading = signal<boolean>(false);
 
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router,
+    private feedback: FeedbackService,
   ) {}
 
   ngOnInit(): void {
@@ -34,28 +37,34 @@ export class RegisterComponent implements OnInit {
   onSubmit(): void {
     if (this.registerForm.invalid) return;
 
-    this.isLoading = true;
+    // Activamos el loader visual
+    this.isLoading.set(true);
     this.errorMessage = '';
 
-    this.authService.register(this.registerForm.value).subscribe({
-      next: (res) => {
-        // Asumimos 201 Created
-        // Redirigimos al login para que inicie sesión normalmente
-        this.router.navigate(['/login'], {
-          queryParams: { registered: 'true' },
-        });
-      },
-      error: (err) => {
-        this.isLoading = false;
-        if (err.status === 409) {
-          this.errorMessage =
-            'Este correo electrónico ya está registrado. Por favor, inicia sesión.';
-        } else if (err.status === 400) {
-          this.errorMessage = 'Revisa los datos introducidos. Faltan campos obligatorios.';
-        } else {
-          this.errorMessage = 'Error inesperado. Inténtalo más tarde.';
-        }
-      },
-    });
+    this.authService
+      .register(this.registerForm.value)
+      .pipe(finalize(() => this.isLoading.set(false)))
+      .subscribe({
+        next: () => {
+          this.feedback.showToast(
+            '¡Registro completado con éxito! Ya puedes iniciar sesión.',
+            'success',
+          );
+          this.router.navigate(['/login']);
+        },
+        error: (err) => {
+          console.error('Error en registro:', err);
+
+          // Lógica de captura del Error 409
+          if (err.status === 409) {
+            const mensajeBackend = err.error?.error || 'El email ya está registrado';
+            this.errorMessage = 'Este correo ya tiene una cuenta. ¿Quieres iniciar sesión?';
+            this.feedback.showToast(mensajeBackend, 'error');
+          } else {
+            this.errorMessage = 'Error interno del servidor. Inténtalo más tarde.';
+            this.feedback.showToast('Error al registrar usuario', 'error');
+          }
+        },
+      });
   }
 }

@@ -64,8 +64,8 @@
       <input id="telefono" type="tel" formControlName="telefono" placeholder="600 000 000" />
     </div>
 
-    <button type="submit" [disabled]="registerForm.invalid || isLoading">
-      {{ isLoading ? 'Creando cuenta...' : 'Registrarme' }}
+    <button type="submit" [disabled]="registerForm.invalid || isLoading()">
+      {{ isLoading() ? 'Registrando...' : 'Registrarse' }}
     </button>
   </form>
 

@@ -1,8 +1,17 @@
-<div class="admin-container p-4 max-w-4xl mx-auto">
-  <h1 class="text-2xl font-bold mb-6 text-gray-900">Gestión de Barbería</h1>
+<div class="admin-container p-4 max-w-4xl mx-auto" aria-label="Panel de Administración">
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl font-bold text-gray-900 m-0">Gestión de Barbería</h1>
+    <button
+      (click)="cerrarSesion()"
+      class="px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition font-medium text-sm shadow-sm"
+    >
+      Cerrar Sesión
+    </button>
+  </div>
+
   <div
     *ngIf="uiMessage"
-    aria-live="polite"
+    aria-live="assertive"
     role="alert"
     class="mb-4 p-3 rounded shadow-sm text-sm font-medium transition-all"
     [ngClass]="{
@@ -12,81 +21,73 @@
   >
     {{ uiMessage.text }}
   </div>
-  <div
-    role="tablist"
-    aria-label="Secciones de administración"
-    class="flex gap-2 mb-6 bg-gray-200 p-1 rounded-lg"
-  >
+
+  <div role="tablist" class="flex gap-2 mb-6 bg-gray-200 p-1 rounded-lg">
     <button
       role="tab"
-      [attr.aria-selected]="view === 'barberos'"
-      [attr.tabindex]="view === 'barberos' ? 0 : -1"
       (click)="view = 'barberos'; resetForms()"
       [class.bg-white]="view === 'barberos'"
       [class.shadow]="view === 'barberos'"
-      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+      class="flex-1 py-2 rounded-md transition font-medium"
     >
       Barberos
     </button>
     <button
       role="tab"
-      [attr.aria-selected]="view === 'servicios'"
-      [attr.tabindex]="view === 'servicios' ? 0 : -1"
       (click)="view = 'servicios'; resetForms()"
       [class.bg-white]="view === 'servicios'"
       [class.shadow]="view === 'servicios'"
-      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+      class="flex-1 py-2 rounded-md transition font-medium"
     >
       Servicios
     </button>
+    <button
+      role="tab"
+      (click)="view = 'citas'; resetForms()"
+      [class.bg-white]="view === 'citas'"
+      [class.shadow]="view === 'citas'"
+      class="flex-1 py-2 rounded-md transition font-medium"
+    >
+      Gestión Citas
+    </button>
   </div>
 
-  <section
-    *ngIf="view === 'barberos'"
-    role="tabpanel"
-    aria-label="Panel de Barberos"
-    class="fade-in"
-  >
+  <!-- BARBEROS -->
+  <section *ngIf="view === 'barberos'" class="fade-in">
     <div class="card mb-6 p-4 bg-white shadow rounded">
       <h2 class="font-semibold mb-4 text-gray-800">{{ editingId ? 'Editar' : 'Nuevo' }} Barbero</h2>
-
       <form [formGroup]="barberoForm" (ngSubmit)="onSaveBarbero()" class="space-y-4">
-        <div>
-          <label for="b-nombre" class="sr-only">Nombre del barbero</label>
-          <input
-            id="b-nombre"
-            formControlName="nombre"
-            placeholder="Nombre completo"
-            class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div>
-          <label for="b-especialidad" class="sr-only">Especialidad</label>
-          <input
-            id="b-especialidad"
-            formControlName="especialidad"
-            placeholder="Ej: Degradados, Barba"
-            class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div class="flex flex-mobile-col gap-2 pt-2">
+        <input
+          formControlName="nombre"
+          placeholder="Nombre completo"
+          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          formControlName="especialidad"
+          placeholder="Ej: Degradados, Barba"
+          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          formControlName="email"
+          type="email"
+          placeholder="Email del barbero"
+          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+        />
+        <input
+          formControlName="password"
+          type="password"
+          placeholder="Contraseña"
+          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+        />
+        <div class="flex gap-2 pt-2">
           <button
             type="submit"
-            [disabled]="barberoForm.invalid || isLoading"
+            [disabled]="barberoForm.invalid || isLoading()"
             class="btn-primary flex-1"
           >
-            <span *ngIf="isLoading" aria-hidden="true">⏳</span>
-            {{ isLoading ? 'Guardando...' : editingId ? 'Actualizar' : 'Añadir Barbero' }}
+            {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Añadir Barbero' }}
           </button>
-          <button
-            *ngIf="editingId"
-            (click)="resetForms()"
-            type="button"
-            aria-label="Cancelar edición"
-            class="btn-secondary w-full sm:w-auto"
-          >
+          <button *ngIf="editingId" (click)="resetForms()" type="button" class="btn-secondary">
             Cancelar
           </button>
         </div>
@@ -102,97 +103,66 @@
         <div>
           <p
             class="font-bold text-gray-900"
-            [class.line-through]="!b.activo"
-            [class.text-gray-400]="!b.activo"
+            [class.line-through]="b.activo != 1"
+            [class.text-gray-400]="b.activo != 1"
           >
             {{ b.nombre }}
+            <span *ngIf="b.activo != 1" class="text-xs text-red-500 font-normal ml-2"
+              >(De baja)</span
+            >
           </p>
           <span class="text-sm text-gray-500">{{ b.especialidad }}</span>
         </div>
-        <div class="flex flex-col sm:flex-row gap-2">
-          <button
-            (click)="editEntity(b, 'b')"
-            aria-label="Editar barbero"
-            class="p-2 text-blue-600 font-medium"
-          >
-            Editar
-          </button>
+        <div class="flex gap-2">
+          <button (click)="editEntity(b, 'b')" class="p-2 text-blue-600 font-medium">Editar</button>
           <button
             (click)="toggleBarberoActivo(b)"
-            [attr.aria-label]="b.activo ? 'Desactivar barbero' : 'Activar barbero'"
-            [class.text-red-600]="b.activo"
-            [class.text-green-600]="!b.activo"
+            [class.text-orange-600]="b.activo == 1"
+            [class.text-green-600]="b.activo != 1"
             class="p-2 font-medium"
           >
-            {{ b.activo ? 'Baja' : 'Alta' }}
+            {{ b.activo == 1 ? 'Dar de Baja' : 'Reactivar' }}
           </button>
         </div>
       </div>
     </div>
   </section>
 
-  <section
-    *ngIf="view === 'servicios'"
-    role="tabpanel"
-    aria-label="Panel de Servicios"
-    class="fade-in"
-  >
+  <!-- SERVICIOS -->
+  <section *ngIf="view === 'servicios'" class="fade-in">
     <div class="card mb-6 p-4 bg-white shadow rounded">
       <h2 class="font-semibold mb-4 text-gray-800">
         {{ editingId ? 'Editar' : 'Nuevo' }} Servicio
       </h2>
-
       <form [formGroup]="servicioForm" (ngSubmit)="onSaveServicio()" class="space-y-4">
-        <div>
-          <label for="s-nombre" class="sr-only">Nombre del servicio</label>
+        <input
+          formControlName="nombre"
+          placeholder="Nombre del servicio"
+          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+        />
+        <div class="flex gap-2">
           <input
-            id="s-nombre"
-            formControlName="nombre"
-            placeholder="Nombre del servicio"
-            class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+            formControlName="precio"
+            type="number"
+            placeholder="Precio €"
+            class="input-field w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            formControlName="duracion"
+            type="number"
+            placeholder="Mins"
+            class="input-field w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500"
           />
         </div>
-
-        <div class="flex gap-2">
-          <div class="w-1/2">
-            <label for="s-precio" class="sr-only">Precio en euros</label>
-            <input
-              id="s-precio"
-              type="number"
-              formControlName="precio"
-              placeholder="Precio €"
-              class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div class="w-1/2">
-            <label for="s-duracion" class="sr-only">Duración en minutos</label>
-            <input
-              id="s-duracion"
-              type="number"
-              formControlName="duracion"
-              placeholder="Mins"
-              class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-        </div>
-
-        <div class="flex flex-mobile-col gap-2 pt-2">
+        <div class="flex gap-2 pt-2">
           <button
             type="submit"
-            [disabled]="servicioForm.invalid || isLoading"
+            [disabled]="servicioForm.invalid || isLoading()"
             class="btn-primary flex-1"
           >
-            <span *ngIf="isLoading" aria-hidden="true">⏳</span>
-            {{ isLoading ? 'Guardando...' : editingId ? 'Actualizar' : 'Guardar Servicio' }}
+            {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Guardar Servicio' }}
           </button>
-
-          <button
-            *ngIf="editingId"
-            (click)="resetForms()"
-            type="button"
-            aria-label="Cancelar edición"
-            class="btn-secondary w-full sm:w-auto"
-          >
+          <button *ngIf="editingId" (click)="resetForms()" type="button" class="btn-secondary">
             Cancelar
           </button>
         </div>
@@ -209,14 +179,68 @@
           <p class="font-bold text-gray-900">{{ s.nombre }}</p>
           <span class="text-sm text-gray-500">{{ s.duracion }} min - {{ s.precio }}€</span>
         </div>
-        <div>
-          <button
-            (click)="editEntity(s, 's')"
-            aria-label="Editar servicio"
-            class="p-2 text-blue-600 font-medium"
-          >
-            Editar
-          </button>
+        <button (click)="editEntity(s, 's')" class="p-2 text-blue-600 font-medium">Editar</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CITAS -->
+  <section *ngIf="view === 'citas'" class="fade-in">
+    <div class="card mb-6 p-4 bg-white shadow rounded">
+      <h2 class="font-semibold mb-4 text-gray-800">Citas Pendientes de Aprobación</h2>
+      <div *ngIf="citas.length === 0" class="text-center text-gray-500 py-4">
+        No hay citas registradas en el sistema.
+      </div>
+      <div class="space-y-3" role="list">
+        <div
+          *ngFor="let cita of citas"
+          role="listitem"
+          class="p-4 border rounded shadow-sm flex flex-col md:flex-row justify-between md:items-center"
+          [ngClass]="{ 'border-l-4 border-l-yellow-400 bg-yellow-50': cita.estado === 'pendiente' }"
+        >
+          <div class="mb-3 md:mb-0">
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-bold text-lg">{{
+                cita.fecha_hora | date: 'dd/MM/yyyy HH:mm'
+              }}</span>
+              <span
+                class="px-2 py-1 text-xs rounded-full font-bold uppercase"
+                [ngClass]="{
+                  'bg-yellow-200 text-yellow-800': cita.estado === 'pendiente',
+                  'bg-blue-200 text-blue-800': cita.estado === 'confirmada',
+                  'bg-green-200 text-green-800': cita.estado === 'completada',
+                  'bg-red-200 text-red-800': cita.estado === 'cancelada',
+                }"
+                >{{ cita.estado }}</span
+              >
+            </div>
+            <p class="text-gray-700"><strong>Cliente:</strong> {{ cita.cliente_nombre }}</p>
+            <p class="text-sm text-gray-500">
+              Barbero: {{ cita.barbero_nombre }} | Servicio: {{ cita.servicio_nombre }}
+            </p>
+          </div>
+          <div class="flex gap-2" *ngIf="cita.estado === 'pendiente'">
+            <button
+              (click)="cambiarEstadoCita(cita.id, 'confirmada')"
+              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition"
+            >
+              Confirmar
+            </button>
+            <button
+              (click)="cambiarEstadoCita(cita.id, 'cancelada')"
+              class="px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium transition"
+            >
+              Rechazar
+            </button>
+          </div>
+          <div class="flex gap-2" *ngIf="cita.estado === 'confirmada'">
+            <button
+              (click)="cambiarEstadoCita(cita.id, 'completada')"
+              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition"
+            >
+              Marcar Completada
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -3,9 +3,18 @@
   role="main"
   aria-label="Panel de control del barbero"
 >
-  <header class="mb-4">
-    <h2 class="h4 fw-bold" id="panel-title">Mi Panel de Hoy</h2>
-    <p class="text-muted small" aria-hidden="true">Gestiona tus citas y clientes walk-in</p>
+  <header class="mb-4 d-flex justify-content-between align-items-center">
+    <div>
+      <h2 class="h4 fw-bold mb-1" id="panel-title">Mi Panel de Hoy</h2>
+      <p class="text-muted small mb-0" aria-hidden="true">Gestiona tus citas y clientes walk-in</p>
+    </div>
+    <button
+      (click)="cerrarSesion()"
+      class="btn btn-sm btn-outline-danger"
+      aria-label="Cerrar sesión de barbero"
+    >
+      Cerrar Sesión
+    </button>
   </header>
 
   <section class="mb-5" aria-labelledby="citas-title">
@@ -20,28 +29,72 @@
       No tienes citas programadas para hoy.
     </div>
 
-    <div class="list-group shadow-sm" role="list">
-      <div
-        *ngFor="let cita of citas()"
-        role="listitem"
-        class="list-group-item list-group-item-action d-flex flex-mobile-col justify-content-between align-items-md-center align-items-start gap-2"
-      >
-        <div>
-          <span
-            class="badge bg-dark me-2"
-            [attr.aria-label]="'Hora de la cita: ' + (cita.fecha_hora | date: 'HH:mm')"
-          >
-            {{ cita.fecha_hora | date: 'HH:mm' }}
-          </span>
-          <strong>{{ cita.cliente_nombre }}</strong>
-          <div class="text-muted small">{{ cita.servicio_nombre }} ({{ cita.precio }}€)</div>
-        </div>
-        <span
-          [class]="'badge ' + (cita.estado === 'confirmada' ? 'bg-success' : 'bg-warning')"
-          [attr.aria-label]="'Estado de la cita: ' + cita.estado"
+    <div class="row g-3" aria-live="polite" role="list">
+      <div *ngFor="let cita of citas()" class="col-12" role="listitem">
+        <div
+          class="card border-0 shadow-sm border-start border-4"
+          [class.border-warning]="cita.estado === 'pendiente'"
+          [class.border-primary]="cita.estado === 'confirmada'"
+          [class.border-success]="cita.estado === 'completada'"
         >
-          {{ cita.estado }}
-        </span>
+          <div class="card-body d-flex flex-column gap-3">
+            <div class="d-flex justify-content-between align-items-start">
+              <div>
+                <span
+                  class="badge bg-dark me-2"
+                  [attr.aria-label]="'Hora: ' + (cita.fecha_hora | date: 'HH:mm')"
+                >
+                  {{ cita.fecha_hora | date: 'HH:mm' }}
+                </span>
+                <strong>{{ cita.cliente_nombre }}</strong>
+                <div class="text-muted small mt-1">
+                  {{ cita.servicio_nombre }} ({{ cita.precio }}€)
+                </div>
+              </div>
+              <span
+                class="badge"
+                [class.bg-warning]="cita.estado === 'pendiente'"
+                [class.text-dark]="cita.estado === 'pendiente'"
+                [class.bg-primary]="cita.estado === 'confirmada'"
+                [class.bg-success]="cita.estado === 'completada'"
+              >
+                {{ cita.estado | uppercase }}
+              </span>
+            </div>
+
+            <div
+              class="btn-group btn-group-sm w-100 mt-2"
+              *ngIf="cita.estado === 'pendiente' || cita.estado === 'confirmada'"
+            >
+              <ng-container *ngIf="cita.estado === 'pendiente'">
+                <button
+                  (click)="cambiarEstadoCita(cita.id, 'confirmada')"
+                  class="btn btn-outline-primary"
+                  aria-label="Confirmar cita"
+                >
+                  Confirmar
+                </button>
+                <button
+                  (click)="cambiarEstadoCita(cita.id, 'cancelada')"
+                  class="btn btn-outline-danger"
+                  aria-label="Cancelar cita"
+                >
+                  Cancelar
+                </button>
+              </ng-container>
+
+              <ng-container *ngIf="cita.estado === 'confirmada'">
+                <button
+                  (click)="cambiarEstadoCita(cita.id, 'completada')"
+                  class="btn btn-success"
+                  aria-label="Finalizar cita"
+                >
+                  Completar Cita
+                </button>
+              </ng-container>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </section>

@@ -15,7 +15,7 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class ServiciosService {
-  private apiUrl = `${environment.apiUrl}/api/servicios`;
+  private apiUrl = `${environment.apiUrl}/servicios`;
 
   constructor(private http: HttpClient) {}
 

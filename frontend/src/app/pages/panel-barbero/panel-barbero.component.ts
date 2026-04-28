@@ -1,25 +1,31 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule, DatePipe } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+
 import { BarberosService } from '../../core/services/barberos.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { WalkinsService } from '../../core/services/walkins.service';
 import { FeedbackService } from '../../core/services/feedback.service';
+import { CitasService } from '../../core/services/citas.service';
 
 @Component({
   selector: 'app-panel-barbero',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ReactiveFormsModule],
   providers: [DatePipe],
   templateUrl: './panel-barbero.component.html',
   styleUrls: ['./panel-barbero.component.css'],
 })
 export class BarberoPanelComponent implements OnInit {
   private barberoService = inject(BarberosService);
-  private authService = inject(AuthService);
+  private citasService = inject(CitasService);
   private walkinsService = inject(WalkinsService);
   private feedback = inject(FeedbackService);
   private fb = inject(FormBuilder);
+
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   // Signals para el estado de la vista
   citas = signal<any[]>([]);
@@ -97,5 +103,30 @@ export class BarberoPanelComponent implements OnInit {
         this.cargarDatos(); // Refresh sencillo
       },
     });
+  }
+
+  cambiarEstadoCita(id: number, nuevoEstado: string) {
+    this.citasService.cambiarEstado(id, nuevoEstado).subscribe({
+      next: () => {
+        this.feedback.showToast(`Cita marcada como ${nuevoEstado}`, 'success');
+        this.cargarDatos(); // Refresca el panel
+      },
+      error: (err) => {
+        // Validación para evidenciar si el backend no está actualizado
+        if (err.status === 403) {
+          this.feedback.showToast(
+            'Acceso denegado: El backend aún exige rol de Admin para esto.',
+            'error',
+          );
+        } else {
+          this.feedback.showToast('Error al actualizar la cita', 'error');
+        }
+      },
+    });
+  }
+
+  cerrarSesion(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
   }
 }

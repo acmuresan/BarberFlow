@@ -8,6 +8,7 @@ import { PanelVivoComponent } from './pages/panel-vivo/panel-vivo.component';
 import { LoginComponent } from './pages/login/login.component';
 import { RegisterComponent } from './pages/register/register.component';
 import { MisCitasComponent } from './pages/mis-citas/mis-citas.component';
+import { ReservaComponent } from './pages/reserva/reserva.component';
 
 export const routes: Routes = [
   //Ruta pública
@@ -45,4 +46,6 @@ export const routes: Routes = [
     component: MisCitasComponent,
     canActivate: [authGuard],
   },
+
+  { path: 'reserva', component: ReservaComponent, canActivate: [authGuard] },
 ];

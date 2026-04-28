@@ -1,7 +1,7 @@
 .wizard-container {
   padding: 1rem;
   max-width: 480px; /* Optimizado para móvil, centrado en desktop*/
-  margin: 0 auto;
+  margin-bottom: 1.5rem;
 }
 
 .progress-header {
@@ -92,6 +92,18 @@
   color: #fff;
 }
 
+.btn-cancelar {
+  background: none;
+  border: none;
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  margin-bottom: 1rem;
+  transition: color 0.2s;
+}
+
 .action-buttons {
   display: flex;
   gap: 1rem;
@@ -128,6 +140,21 @@
     color: #fff;
     font-weight: bold;
   }
+}
+
+.empty-cell {
+  background: transparent !important;
+  cursor: default !important;
+  border: none !important;
+  pointer-events: none; /* Inhabilitar clics */
+}
+
+.time-slot.disabled-time {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+  border-color: #e5e7eb;
+  color: #9ca3af;
 }
 
 button:focus-visible,

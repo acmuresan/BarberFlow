@@ -1,16 +1,26 @@
 <div class="citas-page">
-  <h1>Mis Reservas</h1>
+  <div class="page-header">
+    <h1>Mis Reservas</h1>
+    <div style="display: flex; gap: 10px">
+      <button routerLink="/reserva" class="btn-primary btn-sm" *ngIf="!isLoading()">
+        + Nueva Cita
+      </button>
+      <button (click)="cerrarSesion()" class="btn-outline-danger btn-sm" aria-label="Cerrar sesión">
+        Cerrar Sesión
+      </button>
+    </div>
+  </div>
 
-  <div *ngIf="isLoading" class="loading">Cargando tus citas...</div>
+  <div *ngIf="isLoading()" class="loading">Cargando tus citas...</div>
 
-  <div *ngIf="!isLoading && citas.length === 0" class="empty-state">
+  <div *ngIf="!isLoading() && citas().length === 0" class="empty-state">
     <div class="icon">📅</div>
     <p>Aún no tienes ninguna cita programada.</p>
     <button routerLink="/reserva" class="btn-primary">Reservar mi primera cita</button>
   </div>
 
-  <div class="citas-list" *ngIf="!isLoading && citas.length > 0">
-    <div class="cita-card" *ngFor="let cita of citas">
+  <div class="citas-list" *ngIf="!isLoading() && citas().length > 0">
+    <div class="cita-card" *ngFor="let cita of citas()">
       <div class="cita-header">
         <span [ngClass]="['status-chip', getEstadoClass(cita.estado)]">
           {{ cita.estado | uppercase }}
