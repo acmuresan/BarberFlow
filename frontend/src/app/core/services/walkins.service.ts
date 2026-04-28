@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -24,5 +24,13 @@ export class WalkinsService {
     estado: 'atendiendo' | 'completado' | 'cancelado',
   ): Observable<any> {
     return this.http.patch(`${this.apiUrl}/${id}/estado`, { estado });
+  }
+
+  getWalkins(barberoId?: number): Observable<any> {
+    let params = new HttpParams();
+    if (barberoId) {
+      params = params.set('barbero_id', barberoId.toString());
+    }
+    return this.http.get(this.apiUrl, { params });
   }
 }

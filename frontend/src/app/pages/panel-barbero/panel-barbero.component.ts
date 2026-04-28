@@ -52,6 +52,8 @@ export class BarberoPanelComponent implements OnInit {
   }
 
   cargarDatos() {
+    const user = this.authService.currentUser();
+    if (!user || !user.barbero_id) return;
     this.barberoService.getCitasHoy(this.barberoId).subscribe({
       next: (data) => {
         // Asegura que data es un array antes de procesar
@@ -75,6 +77,12 @@ export class BarberoPanelComponent implements OnInit {
         );
         this.walkins.set(filtrados);
         this.loading.set(false); //Se apaga loading inicial
+      },
+    });
+
+    this.walkinsService.getWalkins(user.barbero_id).subscribe({
+      next: (res: any) => {
+        if (res && res.data) this.walkins.set(res.data);
       },
     });
   }

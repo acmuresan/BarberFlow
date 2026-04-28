@@ -24,6 +24,14 @@
 
   <div role="tablist" class="flex gap-2 mb-6 bg-gray-200 p-1 rounded-lg">
     <button
+      (click)="view = 'dashboard'; resetForms()"
+      [class.bg-white]="view === 'dashboard'"
+      [class.shadow]="view === 'dashboard'"
+      class="flex-1 py-2 rounded-md transition font-bold text-blue-800 focus:outline-none"
+    >
+      Panel en Vivo
+    </button>
+    <button
       (click)="view = 'barberos'; resetForms()"
       [class.bg-white]="view === 'barberos'"
       [class.shadow]="view === 'barberos'"
@@ -47,7 +55,144 @@
     >
       Gestión Citas
     </button>
+    <button
+      (click)="view = 'walkins'; resetForms()"
+      [class.bg-white]="view === 'walkins'"
+      [class.shadow]="view === 'walkins'"
+      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none"
+    >
+      Cola Walk-ins
+    </button>
   </div>
+
+  <!--WALK-IN-->
+  <section *ngIf="view === 'dashboard'" class="fade-in space-y-6">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div
+        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 flex items-center justify-between"
+      >
+        <div>
+          <p class="text-sm text-gray-500 font-medium uppercase">Citas Hoy (Pendientes)</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats().citasPendientesHoy }}</p>
+        </div>
+        <div class="text-4xl">📅</div>
+      </div>
+
+      <div
+        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500 flex items-center justify-between"
+      >
+        <div>
+          <p class="text-sm text-gray-500 font-medium uppercase">Walk-ins Esperando</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats().esperando }}</p>
+        </div>
+        <div class="text-4xl">🛋️</div>
+      </div>
+
+      <div
+        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-400 flex items-center justify-between"
+      >
+        <div>
+          <p class="text-sm text-gray-500 font-medium uppercase">Siendo Atendidos</p>
+          <p class="text-3xl font-bold text-gray-900">{{ stats().atendiendo }}</p>
+        </div>
+        <div class="text-4xl">✂️</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">📅 Agenda de Hoy</h3>
+
+        <div *ngIf="citasHoy().length === 0" class="text-center text-gray-500 py-6">
+          No hay citas programadas para hoy.
+        </div>
+
+        <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+          <div
+            *ngFor="let cita of citasHoy()"
+            class="p-3 border rounded-lg flex justify-between items-center bg-gray-50"
+            [class.border-blue-300]="cita.estado === 'confirmada'"
+            [class.opacity-50]="cita.estado === 'completada'"
+          >
+            <div>
+              <span class="font-bold text-lg text-blue-900"
+                >{{ cita.fecha_hora | date: 'HH:mm' }}h</span
+              >
+              <span
+                class="ml-2 px-2 py-0.5 text-xs rounded-full uppercase font-bold"
+                [ngClass]="{
+                  'bg-yellow-200 text-yellow-800': cita.estado === 'pendiente',
+                  'bg-blue-200 text-blue-800': cita.estado === 'confirmada',
+                  'bg-green-200 text-green-800': cita.estado === 'completada',
+                }"
+              >
+                {{ cita.estado }}
+              </span>
+              <p class="text-sm font-medium text-gray-900 mt-1">
+                {{ cita.cliente_nombre || 'Usuario ' + cita.usuarios_id }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ cita.barbero_nombre }} - {{ cita.servicio_nombre }}
+              </p>
+            </div>
+            <button
+              (click)="view = 'citas'"
+              class="text-blue-600 text-sm font-medium hover:underline"
+            >
+              Gestionar
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <h3
+          class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex justify-between items-center"
+        >
+          <span>🚶‍♂️ Walk-ins (En local)</span>
+          <span class="flex h-3 w-3 relative">
+            <span
+              class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
+            ></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+          </span>
+        </h3>
+
+        <div *ngIf="walkinsEnCola().length === 0" class="text-center text-gray-500 py-6">
+          El sofá está vacío.
+        </div>
+
+        <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
+          <div
+            *ngFor="let w of walkinsEnCola()"
+            class="p-3 border rounded-lg flex justify-between items-center bg-gray-50"
+            [class.border-purple-300]="w.estado === 'esperando'"
+            [class.border-orange-300]="w.estado === 'atendiendo'"
+          >
+            <div>
+              <p class="font-bold text-gray-900">{{ w.nombre }}</p>
+              <p class="text-xs text-gray-500">Llegada: {{ w.fecha_llegada | date: 'HH:mm' }}h</p>
+              <span
+                class="inline-block mt-1 px-2 py-0.5 text-xs rounded-full uppercase font-bold"
+                [ngClass]="{
+                  'bg-purple-200 text-purple-800': w.estado === 'esperando',
+                  'bg-orange-200 text-orange-800': w.estado === 'atendiendo',
+                }"
+              >
+                {{ w.estado }}
+              </span>
+            </div>
+            <button
+              (click)="view = 'walkins'"
+              class="text-purple-600 text-sm font-medium hover:underline"
+            >
+              Gestionar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 
   <section *ngIf="view === 'barberos'" class="fade-in">
     <div class="card mb-6 p-4 bg-white shadow rounded">
@@ -313,6 +458,92 @@
               class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition text-sm"
             >
               Marcar Completada
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section *ngIf="view === 'walkins'" class="fade-in">
+    <div class="card mb-6 p-4 bg-white shadow rounded">
+      <div class="flex space-x-2 border-b border-gray-200 mb-4">
+        <button
+          (click)="subViewWalkins = 'cola'"
+          [class.border-blue-600]="subViewWalkins === 'cola'"
+          [class.text-blue-600]="subViewWalkins === 'cola'"
+          class="pb-2 px-4 border-b-2 font-medium transition-colors border-transparent text-gray-500 hover:text-gray-900"
+        >
+          En Cola (Activos)
+        </button>
+        <button
+          (click)="subViewWalkins = 'historial'"
+          [class.border-blue-600]="subViewWalkins === 'historial'"
+          [class.text-blue-600]="subViewWalkins === 'historial'"
+          class="pb-2 px-4 border-b-2 font-medium transition-colors border-transparent text-gray-500 hover:text-gray-900"
+        >
+          Historial
+        </button>
+      </div>
+
+      <div
+        *ngIf="(subViewWalkins === 'cola' ? walkinsEnCola() : walkinsHistorial()).length === 0"
+        class="text-center text-gray-500 py-8"
+      >
+        No hay nadie en esta lista en este momento.
+      </div>
+
+      <div class="space-y-3">
+        <div
+          *ngFor="let w of subViewWalkins === 'cola' ? walkinsEnCola() : walkinsHistorial()"
+          class="p-4 border rounded shadow-sm flex flex-col md:flex-row justify-between md:items-center"
+          [ngClass]="{
+            'border-l-4 border-l-purple-500 bg-purple-50': w.estado === 'esperando',
+            'border-l-4 border-l-orange-400 bg-orange-50': w.estado === 'atendiendo',
+          }"
+        >
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="font-bold text-lg text-gray-900">{{ w.nombre }}</span>
+              <span
+                class="px-2 py-1 text-xs rounded-full font-bold uppercase"
+                [ngClass]="{
+                  'bg-purple-200 text-purple-800': w.estado === 'esperando',
+                  'bg-orange-200 text-orange-800': w.estado === 'atendiendo',
+                  'bg-green-200 text-green-800': w.estado === 'completado',
+                  'bg-red-200 text-red-800': w.estado === 'cancelado',
+                }"
+              >
+                {{ w.estado }}
+              </span>
+            </div>
+            <p class="text-sm text-gray-500">
+              Barbero preferido: {{ w.barbero_nombre || 'Cualquiera' }}
+            </p>
+            <p class="text-xs text-gray-400">Llegada: {{ w.fecha_llegada | date: 'HH:mm' }}h</p>
+          </div>
+
+          <div *ngIf="subViewWalkins === 'cola'" class="flex gap-2 mt-3 md:mt-0">
+            <button
+              *ngIf="w.estado === 'esperando'"
+              (click)="cambiarEstadoWalkin(w.id, 'atendiendo')"
+              class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 font-medium transition text-sm"
+            >
+              Empezar a Atender
+            </button>
+            <button
+              *ngIf="w.estado === 'atendiendo'"
+              (click)="cambiarEstadoWalkin(w.id, 'completado')"
+              class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition text-sm"
+            >
+              Finalizar Corte
+            </button>
+            <button
+              *ngIf="w.estado === 'esperando'"
+              (click)="cambiarEstadoWalkin(w.id, 'cancelado')"
+              class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium transition text-sm"
+            >
+              Se marchó
             </button>
           </div>
         </div>

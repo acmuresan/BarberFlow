@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { ServiciosService } from '../../core/services/servicios.service';
 import { ServicioModel } from '../../core/models/servicio.model';
 import { BarberoModel } from '../../core/models/barbero.model';
 import { CitasService } from '../../core/services/citas.service';
+import { WalkinsService } from '../../core/services/walkins.service';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -23,11 +24,13 @@ export class PanelAdminComponent implements OnInit {
   private sService = inject(ServiciosService);
   private citasService = inject(CitasService);
   private authService = inject(AuthService);
+  private walkinsService = inject(WalkinsService);
   private router = inject(Router);
 
   barberos = signal<BarberoModel[]>([]);
   servicios = signal<ServicioModel[]>([]);
   citas = signal<any[]>([]);
+  walkins = signal<any[]>([]);
 
   //Citas computadas para el filtro automático
   citasActivas = computed(() =>
@@ -37,9 +40,18 @@ export class PanelAdminComponent implements OnInit {
   citasHistorial = computed(() =>
     this.citas().filter((c) => c.estado === 'completada' || c.estado === 'cancelada'),
   );
+  walkinsEnCola = computed(() =>
+    this.walkins().filter((w) => w.estado === 'esperando' || w.estado === 'atendiendo'),
+  );
+  walkinsHistorial = computed(() =>
+    this.walkins().filter((w) => w.estado === 'completado' || w.estado === 'cancelado'),
+  );
 
-  view: 'barberos' | 'servicios' | 'citas' = 'barberos';
+  view: 'dashboard' | 'barberos' | 'servicios' | 'citas' | 'walkins' = 'dashboard';
   subViewCitas: 'activas' | 'historial' = 'activas';
+  subViewWalkins: 'cola' | 'historial' = 'cola';
+
+  private pollingInterval: any;
 
   barberoForm: FormGroup;
   servicioForm: FormGroup;
@@ -48,6 +60,35 @@ export class PanelAdminComponent implements OnInit {
   //Estado de la UI
   isLoading = signal<boolean>(false);
   uiMessage: { text: string; type: 'success' | 'error' } | null = null;
+
+  // Helper para saber si una fecha es hoy
+  isToday(fechaString: string): boolean {
+    const d = new Date(fechaString);
+    const hoy = new Date();
+    return (
+      d.getDate() === hoy.getDate() &&
+      d.getMonth() === hoy.getMonth() &&
+      d.getFullYear() === hoy.getFullYear()
+    );
+  }
+
+  // Citas exclusivas de hoy (ordenadas por hora)
+  citasHoy = computed(() => {
+    return this.citas()
+      .filter((c) => this.isToday(c.fecha_hora) && c.estado !== 'cancelada')
+      .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime());
+  });
+
+  // Estadísticas rápidas
+  stats = computed(() => {
+    const esperando = this.walkins().filter((w) => w.estado === 'esperando').length;
+    const atendiendo = this.walkins().filter((w) => w.estado === 'atendiendo').length;
+    const citasPendientesHoy = this.citasHoy().filter(
+      (c) => c.estado === 'pendiente' || c.estado === 'confirmada',
+    ).length;
+
+    return { esperando, atendiendo, citasPendientesHoy };
+  });
 
   constructor() {
     this.barberoForm = this.fb.group({
@@ -66,6 +107,18 @@ export class PanelAdminComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadData();
+
+    // Motor del panel en vivo ( se refresca cada 3 segundos)
+    this.pollingInterval = setInterval(() => {
+      this.loadData();
+    }, 30000);
+  }
+
+  ngOnDestroy(): void {
+    // Limpieza, si el admin se va a otra página se apaga el motor
+    if (this.pollingInterval) {
+      clearInterval(this.pollingInterval);
+    }
   }
 
   loadData() {
@@ -78,6 +131,13 @@ export class PanelAdminComponent implements OnInit {
         }
       },
       error: (err) => console.error('Error al cargar historial de citas:', err),
+    });
+    // Cargar cola de Walk-ins global
+    this.walkinsService.getWalkins().subscribe({
+      next: (res: any) => {
+        if (res && res.data) this.walkins.set(res.data);
+      },
+      error: (err) => console.error('Error al cargar walk-ins:', err),
     });
   }
 
@@ -190,6 +250,17 @@ export class PanelAdminComponent implements OnInit {
           err.error?.error || 'No se puede eliminar: El servicio está asociado a citas existentes.';
         this.showFeedback(msg, 'error');
       },
+    });
+  }
+
+  // LÓGICA DE WALK-IN
+  cambiarEstadoWalkin(id: number, nuevoEstado: 'atendiendo' | 'completado' | 'cancelado') {
+    this.walkinsService.updateWalkinEstado(id, nuevoEstado).subscribe({
+      next: () => {
+        this.showFeedback(`Walk-in actualizado a ${nuevoEstado}`, 'success');
+        this.loadData();
+      },
+      error: () => this.showFeedback('Error al actualizar el walk-in', 'error'),
     });
   }
 
