@@ -43,4 +43,9 @@ export class ServiciosService {
       .patch<ApiResponse<ServicioModel>>(`${this.apiUrl}/${id}`, servicio)
       .pipe(map((response) => response.data));
   }
+
+  // Eliminar un servicio
+  delete(id: number): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${id}`);
+  }
 }

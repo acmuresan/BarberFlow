@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CitasService } from '../../core/services/citas.service';
 import { AuthService } from '../../core/services/auth/auth.service';
@@ -19,11 +19,21 @@ export class MisCitasComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
 
+  // Signal para controlar el modal. Si tiene un número (ID), el modal se abre. Si es null, se cierra
   citas = signal<any[]>([]);
   isLoading = signal<boolean>(true);
-
-  // Signal para controlar el modal. Si tiene un número (ID), el modal se abre. Si es null, se cierra
   citaACancelar = signal<number | null>(null);
+
+  // Estado para controlar que pestaña se ve
+  vistaActual = signal<'activas' | 'historial'>('activas');
+
+  citasActivas = computed(() =>
+    this.citas().filter((c) => c.estado === 'pendiente' || c.estado === 'confirmada'),
+  );
+
+  citasHistorial = computed(() =>
+    this.citas().filter((c) => c.estado === 'completada' || c.estado === 'cancelada'),
+  );
 
   ngOnInit(): void {
     this.cargarCitas();
@@ -40,20 +50,14 @@ export class MisCitasComponent implements OnInit {
 
     this.citasService
       .getCitasByUsuario(user.usuario_id.toString())
-      .pipe(
-        finalize(() => {
-          this.isLoading.set(false); // Se apaga el loader de forma reactiva
-        }),
-      )
+      .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (res) => {
           if (res && res.data) {
-            this.citas.set(res.data); // Se guarda la cita en el Signal
+            this.citas.set(res.data);
           }
         },
-        error: (err) => {
-          this.feedback.showToast('Error de conexión.', 'error');
-        },
+        error: (err) => this.feedback.showToast('Error de conexión.', 'error'),
       });
   }
 

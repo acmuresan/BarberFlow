@@ -173,8 +173,11 @@
       </div>
     </div>
     <div class="action-buttons flex-mobile-col">
-      <button class="btn-secondary" (click)="prevStep()">Corregir</button>
-      <button class="btn-confirm" (click)="confirmarReserva()">CONFIRMAR Y RESERVAR</button>
+      <button class="btn-secondary" [disabled]="isSubmitting" (click)="prevStep()">Corregir</button>
+      <button class="btn-confirm" [disabled]="isSubmitting" (click)="confirmarReserva()">
+        <span *ngIf="isSubmitting">PROCESANDO...</span>
+        <span *ngIf="!isSubmitting">CONFIRMAR Y RESERVAR</span>
+      </button>
     </div>
   </section>
 

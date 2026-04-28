@@ -1,6 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 import { Router, RouterModule } from '@angular/router';
 
 import { AuthService } from '../../core/services/auth/auth.service';
@@ -48,6 +49,8 @@ export class ReservaComponent implements OnInit {
   // Selección del usuario
   selectedServicio: ServicioModel | null = null;
   selectedBarbero: BarberoModel | null = null;
+
+  isSubmitting: boolean = false;
 
   ngOnInit(): void {
     // Cargamos los datos al iniciar el componente
@@ -149,28 +152,44 @@ export class ReservaComponent implements OnInit {
       fecha_hora: `${fechaLocal}T${this.selectedHora}:00`,
     };
 
-    // Se envía la petición
-    this.citasService.crearCita(bodyCita).subscribe({
-      next: () => {
-        this.feedback.showToast('¡Reserva realizada con éxito!', 'success');
-        this.router.navigate(['/mis-citas']);
-      },
-      error: (err: any) => {
-        console.error('Error del servidor:', err);
+    this.isSubmitting = true; // Bloquea el botón
 
-        if (err.status === 409) {
-          this.feedback.showToast(
-            '¡Vaya! Alguien acaba de reservar a esa misma hora. Por favor, elige otra.',
-            'error',
-          );
-          this.currentStep = 4; // Devuelve al cliente a la pantalla de hora
-          this.selectedHora = null; // Fuerza a que elija de nuevo
-        } else {
-          const mensajeError = err.error?.error || 'Error al procesar tu reserva.';
-          this.feedback.showToast(mensajeError, 'error');
-        }
-      },
-    });
+    // Se envía la petición
+    this.citasService
+      .crearCita(bodyCita)
+      .pipe(finalize(() => (this.isSubmitting = false))) // Siempre desbloqueamos al final
+      .subscribe({
+        next: () => {
+          this.feedback.showToast('¡Reserva realizada con éxito!', 'success');
+          this.router.navigate(['/mis-citas']);
+        },
+        error: (err: any) => {
+          console.error('Error del servidor:', err);
+
+          const mensajeBackend = err.error?.error || '';
+
+          // Detecta si es un 409 o si el mensaje del 400 habla de horas/disponibilidad
+          const esConflicto =
+            err.status === 409 ||
+            mensajeBackend.toLowerCase().includes('hora') ||
+            mensajeBackend.toLowerCase().includes('disponible') ||
+            mensajeBackend.toLowerCase().includes('ocupad');
+
+          // Uso de setTimeout para garantizar que el Toast esquiva el ciclo de Angular
+          setTimeout(() => {
+            if (esConflicto) {
+              this.feedback.showToast(
+                '¡Vaya! Esa hora está  reservada. Por favor, elige otra.',
+                'error',
+              );
+              this.currentStep = 4; // Devuelve al cliente a la pantalla de hora
+              this.selectedHora = null; // Fuerza a que elija de nuevo
+            } else {
+              this.feedback.showToast(mensajeBackend || 'Error al procesar tu reserva.', 'error');
+            }
+          });
+        },
+      });
   }
 
   nextStep(): void {

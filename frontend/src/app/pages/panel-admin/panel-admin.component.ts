@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -8,6 +8,7 @@ import { ServiciosService } from '../../core/services/servicios.service';
 import { ServicioModel } from '../../core/models/servicio.model';
 import { BarberoModel } from '../../core/models/barbero.model';
 import { CitasService } from '../../core/services/citas.service';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-panel-admin',
@@ -23,13 +24,22 @@ export class PanelAdminComponent implements OnInit {
   private citasService = inject(CitasService);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private cdr = inject(ChangeDetectorRef);
 
-  barberos: BarberoModel[] = [];
-  servicios: ServicioModel[] = [];
-  citas: any[] = [];
+  barberos = signal<BarberoModel[]>([]);
+  servicios = signal<ServicioModel[]>([]);
+  citas = signal<any[]>([]);
+
+  //Citas computadas para el filtro automático
+  citasActivas = computed(() =>
+    this.citas().filter((c) => c.estado === 'pendiente' || c.estado === 'confirmada'),
+  );
+
+  citasHistorial = computed(() =>
+    this.citas().filter((c) => c.estado === 'completada' || c.estado === 'cancelada'),
+  );
 
   view: 'barberos' | 'servicios' | 'citas' = 'barberos';
+  subViewCitas: 'activas' | 'historial' = 'activas';
 
   barberoForm: FormGroup;
   servicioForm: FormGroup;
@@ -59,19 +69,12 @@ export class PanelAdminComponent implements OnInit {
   }
 
   loadData() {
-    this.bService.getAll().subscribe((data) => {
-      this.barberos = data;
-      this.cdr.detectChanges();
-    });
-    this.sService.getAll().subscribe((data) => {
-      this.servicios = data;
-      this.cdr.detectChanges();
-    });
+    this.bService.getAll().subscribe((data) => this.barberos.set(data));
+    this.sService.getAll().subscribe((data) => this.servicios.set(data));
     this.citasService.getAllCitas().subscribe({
       next: (res: any) => {
         if (res && res.data) {
-          this.citas = res.data;
-          this.cdr.detectChanges();
+          this.citas.set(res.data);
         }
       },
       error: (err) => console.error('Error al cargar historial de citas:', err),
@@ -81,11 +84,9 @@ export class PanelAdminComponent implements OnInit {
   showFeedback(text: string, type: 'success' | 'error') {
     setTimeout(() => {
       this.uiMessage = { text, type };
-      this.cdr.detectChanges();
     });
     setTimeout(() => {
       this.uiMessage = null;
-      this.cdr.detectChanges();
     }, 4000); // Se oculta automaticamente a los 4 segundos
   }
 
@@ -96,20 +97,21 @@ export class PanelAdminComponent implements OnInit {
     this.isLoading.set(true);
 
     const payload = { ...this.barberoForm.value };
+    if (this.editingId && !payload.password) {
+      delete payload.password;
+    }
 
     const action = this.editingId
       ? this.bService.update(this.editingId, payload)
       : this.bService.create(payload);
 
-    action.subscribe({
+    action.pipe(finalize(() => this.isLoading.set(false))).subscribe({
       next: () => {
-        this.isLoading.set(false);
         this.showFeedback(this.editingId ? 'Barbero actualizado' : 'Barbero creado', 'success');
         this.resetForms();
         this.loadData();
       },
       error: (err) => {
-        this.isLoading.set(false);
         const errorMessage = err.error?.error || 'Error de conexión con el servidor';
         this.showFeedback(errorMessage, 'error');
       },
@@ -147,15 +149,13 @@ export class PanelAdminComponent implements OnInit {
       ? this.sService.update(this.editingId, this.servicioForm.value)
       : this.sService.create(this.servicioForm.value);
 
-    action.subscribe({
+    action.pipe(finalize(() => this.isLoading.set(false))).subscribe({
       next: () => {
-        this.isLoading.set(false);
         this.showFeedback('Servicio guardado correctamente', 'success');
         this.resetForms();
         this.loadData();
       },
       error: (err) => {
-        this.isLoading.set(false);
         this.showFeedback(err.error?.error || 'Error al guardar el servicio', 'error');
       },
     });
@@ -165,6 +165,8 @@ export class PanelAdminComponent implements OnInit {
     this.editingId = entity.id;
     if (type === 'b') {
       this.view = 'barberos';
+      this.barberoForm.get('password')?.clearValidators(); //El requisito de la contraseña se vuelve opcional
+      this.barberoForm.get('password')?.updateValueAndValidity(); //Desbloquea el botón para editar incluso sin contraseña
       this.barberoForm.patchValue(entity);
     } else {
       this.view = 'servicios';
@@ -172,9 +174,30 @@ export class PanelAdminComponent implements OnInit {
     }
   }
 
+  eliminarServicio(id: number) {
+    if (!confirm('¿Estás seguro de eliminar este servicio? Esta acción no se puede deshacer.')) {
+      return;
+    }
+
+    this.sService.delete(id).subscribe({
+      next: () => {
+        this.showFeedback('Servicio eliminado correctamente', 'success');
+        this.loadData(); // Recargamos la lista para actualizar los Signals
+      },
+      error: (err) => {
+        // Si el backend devuelve un error de clave foránea (cita asociada)
+        const msg =
+          err.error?.error || 'No se puede eliminar: El servicio está asociado a citas existentes.';
+        this.showFeedback(msg, 'error');
+      },
+    });
+  }
+
   resetForms() {
     this.editingId = null;
     this.barberoForm.reset();
+    this.barberoForm.get('password')?.setValidators([Validators.required, Validators.minLength(4)]);
+    this.barberoForm.get('password')?.updateValueAndValidity();
     this.servicioForm.reset();
   }
 

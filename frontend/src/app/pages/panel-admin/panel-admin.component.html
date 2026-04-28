@@ -24,92 +24,110 @@
 
   <div role="tablist" class="flex gap-2 mb-6 bg-gray-200 p-1 rounded-lg">
     <button
-      role="tab"
       (click)="view = 'barberos'; resetForms()"
       [class.bg-white]="view === 'barberos'"
       [class.shadow]="view === 'barberos'"
-      class="flex-1 py-2 rounded-md transition font-medium"
+      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none"
     >
       Barberos
     </button>
     <button
-      role="tab"
       (click)="view = 'servicios'; resetForms()"
       [class.bg-white]="view === 'servicios'"
       [class.shadow]="view === 'servicios'"
-      class="flex-1 py-2 rounded-md transition font-medium"
+      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none"
     >
       Servicios
     </button>
     <button
-      role="tab"
       (click)="view = 'citas'; resetForms()"
       [class.bg-white]="view === 'citas'"
       [class.shadow]="view === 'citas'"
-      class="flex-1 py-2 rounded-md transition font-medium"
+      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none"
     >
       Gestión Citas
     </button>
   </div>
 
-  <!-- BARBEROS -->
   <section *ngIf="view === 'barberos'" class="fade-in">
     <div class="card mb-6 p-4 bg-white shadow rounded">
       <h2 class="font-semibold mb-4 text-gray-800">{{ editingId ? 'Editar' : 'Nuevo' }} Barbero</h2>
+
       <form [formGroup]="barberoForm" (ngSubmit)="onSaveBarbero()" class="space-y-4">
-        <input
-          formControlName="nombre"
-          placeholder="Nombre completo"
-          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-        />
-        <input
-          formControlName="especialidad"
-          placeholder="Ej: Degradados, Barba"
-          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-        />
-        <input
-          formControlName="email"
-          type="email"
-          placeholder="Email del barbero"
-          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-        />
-        <input
-          formControlName="password"
-          type="password"
-          placeholder="Contraseña"
-          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-        />
+        <div>
+          <input
+            formControlName="nombre"
+            placeholder="Nombre completo"
+            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <input
+            formControlName="especialidad"
+            placeholder="Ej: Degradados, Barba"
+            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Correo electrónico de acceso"
+            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+        <div>
+          <input
+            type="password"
+            formControlName="password"
+            [placeholder]="editingId ? 'Nueva contraseña (opcional)' : 'Contraseña de acceso'"
+            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+          />
+          <p *ngIf="editingId" class="text-xs text-gray-500 mt-1">
+            Deja en blanco para mantener la contraseña actual.
+          </p>
+        </div>
+
         <div class="flex gap-2 pt-2">
           <button
             type="submit"
             [disabled]="barberoForm.invalid || isLoading()"
-            class="btn-primary flex-1"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition font-medium flex-1"
           >
-            {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Añadir Barbero' }}
+            <span *ngIf="isLoading()" class="mr-2">⏳</span>
+            {{
+              isLoading()
+                ? 'Guardando...'
+                : editingId
+                  ? 'Actualizar Barbero'
+                  : 'Crear Barbero y Cuenta'
+            }}
           </button>
-          <button *ngIf="editingId" (click)="resetForms()" type="button" class="btn-secondary">
+          <button
+            *ngIf="editingId"
+            (click)="resetForms()"
+            type="button"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 border border-gray-300"
+          >
             Cancelar
           </button>
         </div>
       </form>
     </div>
 
-    <div class="space-y-3" role="list">
+    <div class="space-y-3">
       <div
-        *ngFor="let b of barberos"
-        role="listitem"
+        *ngFor="let b of barberos()"
         class="flex justify-between items-center p-4 border rounded bg-white shadow-sm hover:shadow transition"
       >
         <div>
           <p
             class="font-bold text-gray-900"
-            [class.line-through]="b.activo != 1"
-            [class.text-gray-400]="b.activo != 1"
+            [class.line-through]="!b.activo"
+            [class.text-gray-400]="!b.activo"
           >
             {{ b.nombre }}
-            <span *ngIf="b.activo != 1" class="text-xs text-red-500 font-normal ml-2"
-              >(De baja)</span
-            >
+            <span *ngIf="!b.activo" class="text-xs text-red-500 font-normal ml-2">(De baja)</span>
           </p>
           <span class="text-sm text-gray-500">{{ b.especialidad }}</span>
         </div>
@@ -117,84 +135,135 @@
           <button (click)="editEntity(b, 'b')" class="p-2 text-blue-600 font-medium">Editar</button>
           <button
             (click)="toggleBarberoActivo(b)"
-            [class.text-orange-600]="b.activo == 1"
-            [class.text-green-600]="b.activo != 1"
+            [class.text-orange-600]="b.activo"
+            [class.text-green-600]="!b.activo"
             class="p-2 font-medium"
           >
-            {{ b.activo == 1 ? 'Dar de Baja' : 'Reactivar' }}
+            {{ b.activo ? 'Dar de Baja' : 'Reactivar' }}
+          </button>
+          <button
+            (click)="eliminarBarberoFisico(b.id)"
+            class="p-2 text-red-600 font-medium"
+            title="Borrar físicamente"
+          >
+            🗑️
           </button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- SERVICIOS -->
   <section *ngIf="view === 'servicios'" class="fade-in">
     <div class="card mb-6 p-4 bg-white shadow rounded">
       <h2 class="font-semibold mb-4 text-gray-800">
         {{ editingId ? 'Editar' : 'Nuevo' }} Servicio
       </h2>
+
       <form [formGroup]="servicioForm" (ngSubmit)="onSaveServicio()" class="space-y-4">
-        <input
-          formControlName="nombre"
-          placeholder="Nombre del servicio"
-          class="input-field w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-        />
-        <div class="flex gap-2">
+        <div>
           <input
-            formControlName="precio"
-            type="number"
-            placeholder="Precio €"
-            class="input-field w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            formControlName="duracion"
-            type="number"
-            placeholder="Mins"
-            class="input-field w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500"
+            formControlName="nombre"
+            placeholder="Nombre del servicio"
+            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        <div class="flex gap-2">
+          <input
+            type="number"
+            formControlName="precio"
+            placeholder="Precio €"
+            class="w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="number"
+            formControlName="duracion"
+            placeholder="Mins"
+            class="w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
         <div class="flex gap-2 pt-2">
           <button
             type="submit"
             [disabled]="servicioForm.invalid || isLoading()"
-            class="btn-primary flex-1"
+            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition font-medium flex-1"
           >
+            <span *ngIf="isLoading()" class="mr-2">⏳</span>
             {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Guardar Servicio' }}
           </button>
-          <button *ngIf="editingId" (click)="resetForms()" type="button" class="btn-secondary">
+          <button
+            *ngIf="editingId"
+            (click)="resetForms()"
+            type="button"
+            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 border border-gray-300"
+          >
             Cancelar
           </button>
         </div>
       </form>
     </div>
 
-    <div class="space-y-3" role="list">
+    <div class="space-y-3">
       <div
-        *ngFor="let s of servicios"
-        role="listitem"
+        *ngFor="let s of servicios()"
         class="flex justify-between items-center p-4 border rounded bg-white shadow-sm hover:shadow transition"
       >
         <div>
           <p class="font-bold text-gray-900">{{ s.nombre }}</p>
           <span class="text-sm text-gray-500">{{ s.duracion }} min - {{ s.precio }}€</span>
         </div>
-        <button (click)="editEntity(s, 's')" class="p-2 text-blue-600 font-medium">Editar</button>
+        <div class="flex gap-2">
+          <button
+            (click)="editEntity(s, 's')"
+            class="p-2 text-blue-600 font-medium hover:bg-blue-50 rounded transition"
+            title="Editar servicio"
+          >
+            Editar
+          </button>
+
+          <button
+            (click)="eliminarServicio(s.id)"
+            class="p-2 text-red-600 font-medium hover:bg-red-50 rounded transition"
+            title="Eliminar servicio permanentemente"
+          >
+            🗑️ Borrar
+          </button>
+        </div>
       </div>
     </div>
   </section>
 
-  <!-- CITAS -->
   <section *ngIf="view === 'citas'" class="fade-in">
     <div class="card mb-6 p-4 bg-white shadow rounded">
-      <h2 class="font-semibold mb-4 text-gray-800">Citas Pendientes de Aprobación</h2>
-      <div *ngIf="citas.length === 0" class="text-center text-gray-500 py-4">
-        No hay citas registradas en el sistema.
+      <div class="flex space-x-2 border-b border-gray-200 mb-4">
+        <button
+          (click)="subViewCitas = 'activas'"
+          [class.border-blue-600]="subViewCitas === 'activas'"
+          [class.text-blue-600]="subViewCitas === 'activas'"
+          class="pb-2 px-4 border-b-2 font-medium transition-colors border-transparent text-gray-500 hover:text-gray-900"
+        >
+          Pendientes y Confirmadas
+        </button>
+        <button
+          (click)="subViewCitas = 'historial'"
+          [class.border-blue-600]="subViewCitas === 'historial'"
+          [class.text-blue-600]="subViewCitas === 'historial'"
+          class="pb-2 px-4 border-b-2 font-medium transition-colors border-transparent text-gray-500 hover:text-gray-900"
+        >
+          Historial
+        </button>
       </div>
-      <div class="space-y-3" role="list">
+
+      <div
+        *ngIf="(subViewCitas === 'activas' ? citasActivas() : citasHistorial()).length === 0"
+        class="text-center text-gray-500 py-4"
+      >
+        No hay citas en esta sección.
+      </div>
+
+      <div class="space-y-3">
         <div
-          *ngFor="let cita of citas"
-          role="listitem"
+          *ngFor="let cita of subViewCitas === 'activas' ? citasActivas() : citasHistorial()"
           class="p-4 border rounded shadow-sm flex flex-col md:flex-row justify-between md:items-center"
           [ngClass]="{ 'border-l-4 border-l-yellow-400 bg-yellow-50': cita.estado === 'pendiente' }"
         >
@@ -211,32 +280,37 @@
                   'bg-green-200 text-green-800': cita.estado === 'completada',
                   'bg-red-200 text-red-800': cita.estado === 'cancelada',
                 }"
-                >{{ cita.estado }}</span
               >
+                {{ cita.estado }}
+              </span>
             </div>
-            <p class="text-gray-700"><strong>Cliente:</strong> {{ cita.cliente_nombre }}</p>
+            <p class="text-gray-700">
+              <strong>Cliente:</strong> {{ cita.cliente_nombre || 'Usuario ' + cita.usuarios_id }}
+            </p>
             <p class="text-sm text-gray-500">
               Barbero: {{ cita.barbero_nombre }} | Servicio: {{ cita.servicio_nombre }}
             </p>
           </div>
-          <div class="flex gap-2" *ngIf="cita.estado === 'pendiente'">
+
+          <div *ngIf="subViewCitas === 'activas'" class="flex gap-2">
             <button
+              *ngIf="cita.estado === 'pendiente'"
               (click)="cambiarEstadoCita(cita.id, 'confirmada')"
-              class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition"
+              class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition text-sm"
             >
               Confirmar
             </button>
             <button
+              *ngIf="cita.estado === 'pendiente'"
               (click)="cambiarEstadoCita(cita.id, 'cancelada')"
-              class="px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium transition"
+              class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium transition text-sm"
             >
               Rechazar
             </button>
-          </div>
-          <div class="flex gap-2" *ngIf="cita.estado === 'confirmada'">
             <button
+              *ngIf="cita.estado === 'confirmada'"
               (click)="cambiarEstadoCita(cita.id, 'completada')"
-              class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition"
+              class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition text-sm"
             >
               Marcar Completada
             </button>
