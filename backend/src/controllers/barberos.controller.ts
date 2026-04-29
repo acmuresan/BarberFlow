@@ -76,10 +76,12 @@ export const postBarbero = async (req: Request, res: Response) => {
 };
 
 // Edita nombre y especialidad de un barbero — solo admin
+// Edita nombre y especialidad de un barbero — solo admin
+// Edita nombre y especialidad de un barbero — solo admin
 export const patchBarbero = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { nombre, especialidad } = req.body;
+    const { nombre, especialidad, email } = req.body;
 
     if (!nombre) {
       return res
@@ -90,7 +92,7 @@ export const patchBarbero = async (req: Request, res: Response) => {
     const barberoId = parseInt(id as string, 10);
 
     const [barberos] = await pool.execute<RowDataPacket[]>(
-      "SELECT id FROM barberos WHERE id = ?",
+      "SELECT id, usuario_id FROM barberos WHERE id = ?",
       [barberoId],
     );
 
@@ -100,14 +102,49 @@ export const patchBarbero = async (req: Request, res: Response) => {
         .json({ success: false, error: "Barbero no encontrado" });
     }
 
+    // Actualizamos el barbero
     await pool.execute<ResultSetHeader>(
       "UPDATE barberos SET nombre = ?, especialidad = ? WHERE id = ?",
       [nombre, especialidad || null, barberoId],
     );
 
+    // Si el barbero tiene usuario vinculado actualizamos nombre y email en usuarios
+    const usuarioId = barberos[0].usuario_id;
+    if (usuarioId) {
+      // Verificamos que el email nuevo no existe ya en otro usuario
+      if (email) {
+        const [emailExistente] = await pool.execute<RowDataPacket[]>(
+          "SELECT id FROM usuarios WHERE email = ? AND id != ?",
+          [email, usuarioId],
+        );
+
+        if (emailExistente.length > 0) {
+          return res.status(409).json({
+            success: false,
+            error: "El email ya está en uso por otro usuario",
+          });
+        }
+
+        await pool.execute<ResultSetHeader>(
+          "UPDATE usuarios SET nombre = ?, email = ? WHERE id = ?",
+          [nombre, email, usuarioId],
+        );
+      } else {
+        await pool.execute<ResultSetHeader>(
+          "UPDATE usuarios SET nombre = ? WHERE id = ?",
+          [nombre, usuarioId],
+        );
+      }
+    }
+
     res.status(200).json({
       success: true,
-      data: { id: barberoId, nombre, especialidad: especialidad || null },
+      data: {
+        id: barberoId,
+        nombre,
+        especialidad: especialidad || null,
+        email: email || null,
+      },
     });
   } catch (error) {
     res
@@ -115,7 +152,6 @@ export const patchBarbero = async (req: Request, res: Response) => {
       .json({ success: false, error: "Error interno del servidor" });
   }
 };
-
 // Cambia el campo activo entre 0 y 1 — soft delete/restore — solo admin
 export const patchActivoBarbero = async (req: Request, res: Response) => {
   try {
@@ -151,6 +187,20 @@ export const patchActivoBarbero = async (req: Request, res: Response) => {
       success: true,
       data: { id: barberoId, activo },
     });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ success: false, error: "Error interno del servidor" });
+  }
+};
+
+// Devuelve todos los barberos incluyendo inactivos — solo admin
+export const getAllBarberos = async (req: Request, res: Response) => {
+  try {
+    const [barberos] = await pool.execute<RowDataPacket[]>(
+      "SELECT id, nombre, especialidad, activo FROM barberos",
+    );
+    res.status(200).json({ success: true, data: barberos });
   } catch (error) {
     res
       .status(500)
