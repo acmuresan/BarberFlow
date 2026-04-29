@@ -1,6 +1,8 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import "./config/database.js";
 import routerAuth from "./routes/auth.routes.js";
 import routerCitas from "./routes/citas.routes.js";
@@ -9,7 +11,6 @@ import routerPanel from "./routes/panel.routes.js";
 import routerBarberos from "./routes/barberos.routes.js";
 import routerServicios from "./routes/servicios.routes.js";
 
-dotenv.config();
 const app = express();
 
 app.use(cors());
@@ -18,8 +19,6 @@ app.use("/api/auth", routerAuth);
 app.use("/api/citas", routerCitas);
 app.use("/api/walkins", routerWalkins);
 app.use("/api/panel", routerPanel);
-app.use("/api/barberos", routerBarberos);
-app.use("/api/servicios", routerServicios);
 app.use("/api/barberos", routerBarberos);
 app.use("/api/servicios", routerServicios);
 
