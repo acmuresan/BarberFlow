@@ -2,13 +2,19 @@ import { Router } from "express";
 import {
   postWalkin,
   patchEstadoWalkin,
+  getWalkins,
 } from "../controllers/walkins.controller.js";
 import { authMiddleware } from "../middlewares/auth.middleware.js";
 import { roleMiddleware } from "../middlewares/role.middleware.js";
 
 const router = Router();
 
-// Rutas del módulo de walkin
+router.get(
+  "/",
+  authMiddleware,
+  roleMiddleware(["admin", "barbero"]),
+  getWalkins,
+);
 router.post(
   "/",
   authMiddleware,
