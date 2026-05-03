@@ -198,7 +198,7 @@ export const getCitasBarberoController = async (
 
     const barberoId = parseInt(id as string, 10);
 
-    if (!req.user?.barbero_id || req.user.barbero_id !== barberoId) {
+    if (!req.user?.barbero_id || Number(req.user.barbero_id) !== barberoId) {
       return res.status(403).json({
         success: false,
         error: "No tienes permiso para ver estas citas.",
