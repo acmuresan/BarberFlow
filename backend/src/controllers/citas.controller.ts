@@ -198,11 +198,14 @@ export const getCitasBarberoController = async (
 
     const barberoId = parseInt(id as string, 10);
 
-    if (!req.user?.barbero_id || Number(req.user.barbero_id) !== barberoId) {
-      return res.status(403).json({
-        success: false,
-        error: "No tienes permiso para ver estas citas.",
-      });
+    // Barberos solo pueden ver sus propias citas
+    if (req.user?.rol === "barbero") {
+      if (!req.user?.barbero_id || Number(req.user.barbero_id) !== barberoId) {
+        return res.status(403).json({
+          success: false,
+          error: "No tienes permiso para ver estas citas.",
+        });
+      }
     }
 
     const citas = await getCitasBarbero(barberoId);

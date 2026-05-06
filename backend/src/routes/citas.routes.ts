@@ -22,7 +22,7 @@ router.get(
 router.get(
   "/barbero/:id",
   authMiddleware,
-  roleMiddleware(["barbero"]),
+  roleMiddleware(["barbero", "admin", "cliente"]),
   getCitasBarberoController,
 );
 router.get("/:usuario_id", authMiddleware, getCitasPorUsuario);
