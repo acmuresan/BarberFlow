@@ -1,0 +1,175 @@
+.bf-panel {
+  max-width: 600px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--bf-bg);
+}
+
+/* Tarjeta de cita */
+
+.bf-cita-card {
+  background: var(--bf-white);
+  border-radius: var(--bf-radius-card);
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s;
+}
+.bf-cita-card:hover {
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+}
+
+.bf-cita-card--completada,
+.bf-cita-card--cancelada {
+  opacity: 0.75;
+}
+
+.bf-cita-hora {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--bf-navy);
+  font-family: var(--font-display);
+}
+
+.bf-cita-nombre {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--bf-text);
+  margin: 0;
+}
+.bf-cita-servicio {
+  font-size: 13px;
+  color: var(--bf-muted);
+  margin: 0;
+}
+
+/* Botones de acción de cita */
+
+.btn-action-confirm,
+.btn-action-cancel,
+.btn-action-complete,
+.btn-action-atender,
+.btn-action-cancel-sm {
+  padding: 0 14px;
+  height: 36px;
+  border: none;
+  border-radius: var(--bf-radius-btn);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-action-confirm {
+  background: var(--bf-info-bg);
+  color: var(--bf-info);
+}
+.btn-action-cancel {
+  background: var(--bf-error-bg);
+  color: var(--bf-error);
+}
+.btn-action-complete {
+  background: var(--bf-success-bg);
+  color: var(--bf-success);
+}
+.btn-action-atender {
+  background: #faf5ff;
+  color: #7e22ce;
+}
+.btn-action-confirm:hover,
+.btn-action-cancel:hover,
+.btn-action-complete:hover,
+.btn-action-atender:hover {
+  opacity: 0.8;
+}
+
+.bf-cita-hora {
+  font-family: sans-serif;
+}
+
+/* Sub-tabs */
+.bf-subtabs {
+  display: flex;
+  border-bottom: 2px solid var(--bf-border);
+}
+
+.bf-subtab {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bf-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+.bf-subtab--active {
+  color: var(--bf-red);
+  border-bottom-color: var(--bf-red);
+  font-weight: 700;
+}
+
+/* Tarjeta walk-in */
+.bf-walkin-card {
+  background: var(--bf-white);
+  border-radius: var(--bf-radius-card);
+  padding: 16px;
+  border-left: 4px solid var(--bf-border);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bf-walkin-card--historial {
+  opacity: 0.7;
+}
+
+.bf-walkin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bf-walkin-nombre {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--bf-text);
+}
+.bf-walkin-hora {
+  font-size: 12px;
+  color: var(--bf-muted);
+}
+.bf-walkin-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* Responsive mobile */
+@media (max-width: 480px) {
+  .bf-walkin-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .bf-walkin-actions {
+    width: 100%;
+  }
+  .btn-action-atender,
+  .btn-action-complete,
+  .btn-action-cancel {
+    flex: 1;
+    justify-content: center;
+  }
+}

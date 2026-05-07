@@ -1,0 +1,16 @@
+.chip-pendiente {
+  background: var(--bf-warning-bg);
+  color: var(--bf-warning);
+}
+.chip-confirmada {
+  background: var(--bf-info-bg);
+  color: var(--bf-info);
+}
+.chip-completada {
+  background: var(--bf-success-bg);
+  color: var(--bf-success);
+}
+.chip-cancelada {
+  background: var(--bf-error-bg);
+  color: var(--bf-error);
+}

@@ -1,0 +1,322 @@
+/* ── Botón volver ─────────────────────────────────────────── */
+.btn-bf-back {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--bf-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+.btn-bf-back:hover {
+  color: var(--bf-navy);
+}
+
+.wizard-step-label {
+  font-size: 12px;
+  color: var(--bf-muted);
+  margin: 0;
+}
+
+/* ── Animación de entrada ─────────────────────────────────── */
+.wizard-step {
+  animation: fadeInUp 0.3s ease;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Título del paso */
+.wizard-title {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--bf-navy);
+  margin: 0;
+}
+
+/* Tarjeta de opción (servicio / barbero) */
+.card-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 18px;
+  background: var(--bf-white);
+  border: 2px solid var(--bf-border);
+  border-radius: var(--bf-radius-card);
+  cursor: pointer;
+  text-align: left;
+  min-height: 60px;
+  transition:
+    border-color 0.2s,
+    background 0.2s,
+    box-shadow 0.2s;
+  width: 100%;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+}
+.card-option:hover {
+  border-color: var(--bf-navy);
+  box-shadow: 0 2px 10px rgba(26, 58, 92, 0.1);
+}
+.card-option--selected {
+  border-color: var(--bf-red) !important;
+  background: var(--bf-red-light) !important;
+}
+
+.card-option__name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--bf-text);
+}
+.card-option__meta {
+  font-size: 13px;
+  color: var(--bf-muted);
+  white-space: nowrap;
+  margin-left: 12px;
+}
+
+/* Botones, extienden los globales de styles.css */
+.btn-bf-primary,
+.btn-bf-secondary,
+.btn-bf-confirm {
+  flex: 1;
+}
+
+.btn-bf-confirm {
+  height: var(--bf-btn-h);
+  background-color: var(--bf-success);
+  color: var(--bf-white);
+  border: none;
+  border-radius: var(--bf-radius-btn);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 15px;
+  width: 100%;
+  cursor: pointer;
+  transition:
+    background-color 0.2s,
+    transform 0.1s;
+}
+.btn-bf-confirm:hover:not(:disabled) {
+  background-color: #166534;
+}
+.btn-bf-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Calendario */
+.bf-calendar {
+  background: var(--bf-white);
+  border-radius: var(--bf-radius-card);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+}
+
+.bf-calendar__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.bf-calendar__month {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--bf-navy);
+}
+
+.bf-calendar__nav {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--bf-navy);
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+.bf-calendar__nav:hover:not(:disabled) {
+  background: var(--bf-navy-light);
+}
+.bf-calendar__nav:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.bf-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  text-align: center;
+}
+
+.bf-calendar__day-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bf-muted);
+  text-transform: uppercase;
+  padding: 4px 0;
+}
+
+.bf-calendar__cell {
+  padding: 8px 4px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--bf-text);
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    color 0.15s;
+}
+.bf-calendar__cell:hover:not(.bf-calendar__cell--disabled):not(.bf-calendar__cell--empty) {
+  background: var(--bf-navy-light);
+}
+.bf-calendar__cell--empty {
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+.bf-calendar__cell--disabled {
+  color: var(--bf-placeholder);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.bf-calendar__cell--selected {
+  background: var(--bf-red) !important;
+  color: var(--bf-white) !important;
+  font-weight: 700;
+}
+
+/* Info selección */
+.bf-selection-info {
+  font-size: 14px;
+  color: var(--bf-muted);
+  background: var(--bf-navy-light);
+  border-radius: var(--bf-radius-btn);
+  padding: 10px 14px;
+}
+
+/* Grid de horas */
+.bf-time-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.bf-time-slot {
+  height: 56px;
+  background: var(--bf-white);
+  border: 2px solid var(--bf-border);
+  border-radius: var(--bf-radius-btn);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--bf-text);
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.bf-time-slot:hover:not(:disabled) {
+  border-color: var(--bf-navy);
+  background: var(--bf-navy-light);
+}
+.bf-time-slot--selected {
+  border-color: var(--bf-red) !important;
+  background: var(--bf-red-light) !important;
+  color: var(--bf-red);
+}
+.bf-time-slot--occupied {
+  background: var(--bf-error-bg);
+  border-color: #fecaca;
+  color: var(--bf-placeholder);
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.bf-time-slot--disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* Leyenda horas */
+.bf-leyenda {
+  font-size: 12px;
+  color: var(--bf-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bf-leyenda__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  display: inline-block;
+}
+.bf-leyenda__dot--libre {
+  background: var(--bf-border);
+}
+.bf-leyenda__dot--ocupada {
+  background: #fca5a5;
+}
+
+/* Tarjeta resumen */
+.bf-resume-card {
+  background: var(--bf-white);
+  border-radius: var(--bf-radius-card);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  padding: 20px;
+}
+
+.bf-resumen-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--bf-border);
+}
+.bf-resumen-row:last-of-type {
+  border-bottom: none;
+}
+
+.bf-resumen-label {
+  font-size: 13px;
+  color: var(--bf-muted);
+}
+.bf-resumen-value {
+  font-size: 15px;
+  color: var(--bf-text);
+}
+
+/* Focus visible accesible */
+.card-option:focus-visible,
+.bf-time-slot:focus-visible,
+.bf-calendar__cell:focus-visible {
+  outline: 3px solid var(--bf-navy);
+  outline-offset: 3px;
+}

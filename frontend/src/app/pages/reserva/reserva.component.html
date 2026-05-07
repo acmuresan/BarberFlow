@@ -1,0 +1,239 @@
+<div
+  class="wizard-container mx-auto py-3 px-3"
+  aria-label="Asistente de reservas"
+  style="max-width: 480px"
+>
+  <!-- HEADER -->
+  <header class="mb-4">
+    <button routerLink="/mis-citas" class="btn-bf-back mb-3" aria-label="Cancelar reserva y volver">
+      ← Volver
+    </button>
+    <p class="wizard-step-label mb-1" aria-live="polite">
+      Paso {{ currentStep }} de {{ totalSteps }}
+    </p>
+    <div class="progress" style="height: 8px; border-radius: 8px; background: #e0e0e0">
+      <div
+        class="progress-bar bg-bf-red"
+        role="progressbar"
+        [style.width.%]="(currentStep / totalSteps) * 100"
+        [attr.aria-valuenow]="currentStep"
+        aria-valuemin="1"
+        [attr.aria-valuemax]="totalSteps"
+        style="border-radius: 8px; background-color: var(--bf-red)"
+      ></div>
+    </div>
+  </header>
+
+  <!-- PASO 1: SERVICIO -->
+  <section *ngIf="currentStep === 1" class="wizard-step animate-fade-in">
+    <h2 class="wizard-title mb-4">¿Qué te vas a hacer hoy?</h2>
+    <div class="d-flex flex-column gap-3">
+      <ng-container *ngIf="servicios$ | async as servicios; else loading">
+        <button
+          *ngFor="let servicio of servicios"
+          class="card-option"
+          [class.card-option--selected]="selectedServicio?.id === servicio.id"
+          [attr.aria-pressed]="selectedServicio?.id === servicio.id"
+          (click)="seleccionarServicio(servicio)"
+        >
+          <span class="card-option__name">{{ servicio.nombre }}</span>
+          <span class="card-option__meta">{{ servicio.precio | currency: 'EUR' }}</span>
+        </button>
+      </ng-container>
+    </div>
+    <button class="btn-bf-primary mt-4" [disabled]="!selectedServicio" (click)="nextStep()">
+      Siguiente
+    </button>
+  </section>
+
+  <!-- PASO 2: BARBERO -->
+  <section *ngIf="currentStep === 2" class="wizard-step animate-fade-in">
+    <h2 class="wizard-title mb-4">Elige a tu barbero</h2>
+    <div class="d-flex flex-column gap-3">
+      <ng-container *ngIf="barberos$ | async as barberos; else loading">
+        <button
+          *ngFor="let barbero of barberos"
+          class="card-option"
+          [class.card-option--selected]="selectedBarbero?.id === barbero.id"
+          [attr.aria-pressed]="selectedBarbero?.id === barbero.id"
+          (click)="seleccionarBarbero(barbero)"
+        >
+          <span class="card-option__name">{{ barbero.nombre }}</span>
+          <span class="card-option__meta" *ngIf="barbero.especialidad">{{
+            barbero.especialidad
+          }}</span>
+        </button>
+      </ng-container>
+    </div>
+    <div class="d-flex gap-3 mt-4">
+      <button class="btn-bf-secondary" (click)="prevStep()">Atrás</button>
+      <button class="btn-bf-primary" [disabled]="!selectedBarbero" (click)="nextStep()">
+        Siguiente
+      </button>
+    </div>
+  </section>
+
+  <!-- PASO 3: FECHA -->
+  <section *ngIf="currentStep === 3" class="wizard-step animate-fade-in">
+    <h2 class="wizard-title mb-4">¿Cuándo quieres venir?</h2>
+
+    <div class="bf-calendar">
+      <div class="bf-calendar__header">
+        <button
+          class="bf-calendar__nav"
+          (click)="cambiarMes(-1)"
+          [disabled]="
+            viewDate.getMonth() === hoy.getMonth() && viewDate.getFullYear() === hoy.getFullYear()
+          "
+          aria-label="Mes anterior"
+        >
+          ‹
+        </button>
+        <span class="bf-calendar__month" aria-live="polite">{{
+          viewDate | date: 'MMMM yyyy' | titlecase
+        }}</span>
+        <button class="bf-calendar__nav" (click)="cambiarMes(1)" aria-label="Mes siguiente">
+          ›
+        </button>
+      </div>
+
+      <div class="bf-calendar__grid" role="grid">
+        <div
+          class="bf-calendar__day-label"
+          *ngFor="let d of ['L', 'M', 'X', 'J', 'V', 'S', 'D']"
+          aria-hidden="true"
+        >
+          {{ d }}
+        </div>
+        <div
+          *ngFor="let dia of diasDelMes"
+          class="bf-calendar__cell"
+          role="gridcell"
+          [class.bf-calendar__cell--empty]="!dia"
+          [class.bf-calendar__cell--disabled]="dia && esFechaPasada(dia)"
+          [class.bf-calendar__cell--selected]="
+            dia && selectedFecha?.toDateString() === dia.toDateString()
+          "
+          [attr.tabindex]="!dia || esFechaPasada(dia) ? -1 : 0"
+          (click)="seleccionarFecha(dia)"
+          (keyup.enter)="seleccionarFecha(dia)"
+        >
+          <ng-container *ngIf="dia">{{ dia | date: 'd' }}</ng-container>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="selectedFecha" class="bf-selection-info mt-3" aria-live="polite">
+      Has elegido el: <strong>{{ selectedFecha | date: 'fullDate' }}</strong>
+    </div>
+
+    <div class="d-flex gap-3 mt-4">
+      <button class="btn-bf-secondary" (click)="prevStep()">Atrás</button>
+      <button class="btn-bf-primary" [disabled]="!selectedFecha" (click)="nextStep()">
+        Siguiente
+      </button>
+    </div>
+  </section>
+
+  <!-- PASO 4: HORA -->
+  <section *ngIf="currentStep === 4" class="wizard-step animate-fade-in">
+    <h2 class="wizard-title mb-3">¿A qué hora te viene bien?</h2>
+
+    <div *ngIf="avisoConflicto()" class="alert-bf-error mb-3" role="alert" aria-live="assertive">
+      <span>{{ avisoConflicto() }}</span>
+    </div>
+
+    <div *ngIf="cargandoHoras()" class="text-center py-4" role="status" aria-live="polite">
+      <div class="bf-spinner mx-auto mb-2"></div>
+      <small style="color: var(--bf-muted)">Comprobando disponibilidad...</small>
+    </div>
+
+    <div
+      *ngIf="!cargandoHoras()"
+      class="bf-time-grid"
+      role="listbox"
+      aria-label="Selección de horas"
+    >
+      <button
+        *ngFor="let hora of horasDisponibles"
+        role="option"
+        class="bf-time-slot"
+        [disabled]="esHoraPasada(hora) || esHoraOcupada(hora)"
+        [class.bf-time-slot--disabled]="esHoraPasada(hora)"
+        [class.bf-time-slot--occupied]="esHoraOcupada(hora)"
+        [class.bf-time-slot--selected]="selectedHora === hora"
+        [attr.aria-selected]="selectedHora === hora"
+        [attr.aria-label]="
+          hora + (esHoraOcupada(hora) ? ' — ocupada' : esHoraPasada(hora) ? ' — no disponible' : '')
+        "
+        (click)="seleccionarHora(hora)"
+      >
+        {{ hora }}
+        <small *ngIf="esHoraOcupada(hora)" class="d-block" style="font-size: 12px; opacity: 0.7"
+          >Ocupada</small
+        >
+      </button>
+    </div>
+
+    <p *ngIf="!cargandoHoras()" class="bf-leyenda mt-3">
+      <span class="bf-leyenda__dot bf-leyenda__dot--libre"></span> Libre &nbsp;
+      <span class="bf-leyenda__dot bf-leyenda__dot--ocupada"></span> Ocupada
+    </p>
+
+    <div class="d-flex gap-3 mt-4">
+      <button class="btn-bf-secondary" (click)="prevStep()">Atrás</button>
+      <button class="btn-bf-primary" [disabled]="!selectedHora" (click)="nextStep()">
+        Siguiente
+      </button>
+    </div>
+  </section>
+
+  <!-- PASO 5: RESUMEN -->
+  <section *ngIf="currentStep === 5" class="wizard-step animate-fade-in">
+    <h2 class="wizard-title mb-4">Resumen de tu reserva</h2>
+
+    <div class="bf-resumen-card mb-4">
+      <div class="bf-resumen-row">
+        <span class="bf-resumen-label">Servicio</span>
+        <strong class="bf-resumen-value">{{ selectedServicio?.nombre }}</strong>
+      </div>
+      <div class="bf-resumen-row">
+        <span class="bf-resumen-label">Barbero</span>
+        <strong class="bf-resumen-value">{{ selectedBarbero?.nombre }}</strong>
+      </div>
+      <div class="bf-resumen-row">
+        <span class="bf-resumen-label">Fecha</span>
+        <strong class="bf-resumen-value">{{ selectedFecha | date: 'dd/MM/yyyy' }}</strong>
+      </div>
+      <div class="bf-resumen-row">
+        <span class="bf-resumen-label">Hora</span>
+        <strong class="bf-resumen-value">{{ selectedHora }}</strong>
+      </div>
+      <hr style="border-color: var(--bf-border); margin: 12px 0" />
+      <div class="bf-resumen-row">
+        <span class="bf-resumen-label" style="font-weight: 700; color: var(--bf-text)">Total</span>
+        <strong class="bf-resumen-value" style="color: var(--bf-red); font-size: 18px"
+          >{{ selectedServicio?.precio }}€</strong
+        >
+      </div>
+    </div>
+
+    <div class="d-flex gap-3">
+      <button class="btn-bf-secondary" [disabled]="isSubmitting()" (click)="prevStep()">
+        Corregir
+      </button>
+      <button class="btn-bf-confirm" [disabled]="isSubmitting()" (click)="confirmarReserva()">
+        <span *ngIf="isSubmitting()">Procesando...</span>
+        <span *ngIf="!isSubmitting()">Confirmar y reservar</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Loading template -->
+  <ng-template #loading>
+    <div class="text-center py-4" role="status" aria-live="polite">
+      <div class="bf-spinner mx-auto mb-2"></div>
+      <small style="color: var(--bf-muted)">Cargando opciones...</small>
+    </div>
+  </ng-template>
+</div>
