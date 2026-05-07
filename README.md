@@ -29,15 +29,15 @@ Además, existe un **panel público** accesible sin login que muestra el total d
 
 ## Stack tecnológico
 
-| Capa | Tecnología |
-|---|---|
-| Frontend | Angular + TypeScript + Angular Material |
-| Backend | Node.js + Express + TypeScript |
-| Base de datos | MySQL 8 (utf8mb4) |
-| Autenticación | JWT (JSON Web Tokens) + bcrypt |
-| Email | Nodemailer (SMTP Gmail) |
-| Control de versiones | Git + GitHub |
-| Gestión del proyecto | Notion (Scrum Board) |
+| Capa                 | Tecnología                              |
+| -------------------- | --------------------------------------- |
+| Frontend             | Angular + TypeScript + Angular Material |
+| Backend              | Node.js + Express + TypeScript          |
+| Base de datos        | MySQL 8 (utf8mb4)                       |
+| Autenticación        | JWT (JSON Web Tokens) + bcrypt          |
+| Email                | Nodemailer (SMTP Gmail)                 |
+| Control de versiones | Git + GitHub                            |
+| Gestión del proyecto | Notion (Scrum Board)                    |
 
 ---
 
@@ -47,7 +47,6 @@ Además, existe un **panel público** accesible sin login que muestra el total d
 BARBERFLOW/
 ├── backend/          → API REST (dominio de Alex)
 ├── frontend/         → Interfaz Angular (dominio de Marta)
-├── logica/           → Documentación, diagramas y QA (dominio de Agus)
 ├── README.md         → Este archivo
 └── LICENSE.md
 ```
@@ -58,11 +57,11 @@ Cada integrante trabaja exclusivamente en su carpeta. Cualquier modificación fu
 
 ## Equipo
 
-| Nombre | Rol | Dominio |
-|---|---|---|
-| Alex Muresan | Backend Developer | `/backend/` |
-| Marta Lozano | Frontend Developer | `/frontend/` |
-| Agustín Pastor | Documentación y QA | `/logica/` |
+| Nombre         | Rol                | Dominio      |
+| -------------- | ------------------ | ------------ |
+| Alex Muresan   | Backend Developer  | `/backend/`  |
+| Marta Lozano   | Frontend Developer | `/frontend/` |
+| Agustín Pastor | Documentación y QA |
 
 **Tutor:** César Tejedor Moreno  
 **Centro:** Técnico Superior en Desarrollo de Aplicaciones Web — a Distancia  
@@ -136,19 +135,19 @@ PANEL_POLLING_INTERVAL_MS=30000
 
 ## Endpoints principales de la API
 
-| Método | Endpoint | Auth | Descripción |
-|---|---|---|---|
-| POST | `/api/auth/register` | Pública | Registro de cliente |
-| POST | `/api/auth/login` | Pública | Login → devuelve JWT |
-| GET | `/api/barberos` | Pública | Lista de barberos activos |
-| GET | `/api/servicios` | Pública | Catálogo de servicios |
-| POST | `/api/citas` | JWT | Crear cita (valida solapamiento) |
-| GET | `/api/citas/:usuario_id` | JWT | Historial de citas del cliente |
-| PATCH | `/api/citas/:id/estado` | JWT + Admin | Cambiar estado; si "confirmada" → envía email |
-| POST | `/api/walkins` | JWT + Admin/Barbero | Registrar walk-in |
-| PATCH | `/api/walkins/:id/estado` | JWT + Admin/Barbero | Cambiar estado walk-in |
-| GET | `/api/panel/hoy` | JWT + Admin/Barbero | Panel operativo en vivo |
-| GET | `/api/panel/publico` | Pública | Total personas + tiempo estimado |
+| Método | Endpoint                  | Auth                | Descripción                                   |
+| ------ | ------------------------- | ------------------- | --------------------------------------------- |
+| POST   | `/api/auth/register`      | Pública             | Registro de cliente                           |
+| POST   | `/api/auth/login`         | Pública             | Login → devuelve JWT                          |
+| GET    | `/api/barberos`           | Pública             | Lista de barberos activos                     |
+| GET    | `/api/servicios`          | Pública             | Catálogo de servicios                         |
+| POST   | `/api/citas`              | JWT                 | Crear cita (valida solapamiento)              |
+| GET    | `/api/citas/:usuario_id`  | JWT                 | Historial de citas del cliente                |
+| PATCH  | `/api/citas/:id/estado`   | JWT + Admin         | Cambiar estado; si "confirmada" → envía email |
+| POST   | `/api/walkins`            | JWT + Admin/Barbero | Registrar walk-in                             |
+| PATCH  | `/api/walkins/:id/estado` | JWT + Admin/Barbero | Cambiar estado walk-in                        |
+| GET    | `/api/panel/hoy`          | JWT + Admin/Barbero | Panel operativo en vivo                       |
+| GET    | `/api/panel/publico`      | Pública             | Total personas + tiempo estimado              |
 
 Formato de respuesta uniforme:
 
@@ -175,11 +174,12 @@ Formato de respuesta uniforme:
 
 ## Flujo de trabajo Git
 
-| Rama | Responsable | Uso |
-|---|---|---|
-| `main` | Equipo | Solo código funcionando. Nunca se sube directamente. |
-| `dev-backend` | Alex | Desarrollo del backend. |
-| `dev-frontend` | Marta | Desarrollo del frontend. |
+| Rama           | Responsable | Uso                                                  |
+| -------------- | ----------- | ---------------------------------------------------- |
+| `main`         | Equipo      | Solo código funcionando. Nunca se sube directamente. |
+| `dev-backend`  | Alex        | Desarrollo del backend.                              |
+| `dev-frontend` | Marta       | Desarrollo del frontend.                             |
+
 El código llega a `main` únicamente mediante Pull Request revisado por el equipo.
 
 ---
