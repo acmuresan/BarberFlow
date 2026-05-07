@@ -4,7 +4,7 @@ import { environment } from '../../../../environments/environment';
 import { catchError, tap } from 'rxjs/operators';
 import { Observable, throwError } from 'rxjs';
 
-// Interfaz estricta para el estado de la sesión
+// Interfaz para el estado de la sesión
 export interface UserSession {
   token: string;
   rol: 'admin' | 'barbero' | 'cliente';
@@ -16,8 +16,8 @@ export interface UserSession {
 })
 export class AuthService {
   private authUrl = `${environment.apiUrl}/auth`; // La base de auth en el backend es /api/auth
-  private http = inject(HttpClient); //Uso de inject() en lugar del constructor
-  // SIGNAL: Fuente de la verdad reactiva para toda la app
+  private http = inject(HttpClient);
+  // Se inicializa con la sesión guardada en localStorage (si existe)
   public currentUser = signal<UserSession | null>(this.loadInitialSession());
 
   // Envía los datos al servidor y reacciona a la respuesta
@@ -53,21 +53,16 @@ export class AuthService {
     return data ? JSON.parse(data) : null;
   }
 
-  // Helper para el Interceptor JWT
+  // El jwt.interceptor.ts llama a getToken() en cada petición saliente.
   getToken(): string | null {
-    const sessionStr = localStorage.getItem('session');
-    if (!sessionStr) return null;
-    const session = JSON.parse(sessionStr);
-    return session.token;
+    return this.currentUser()?.token ?? null;
   }
 
   isLoggedIn(): boolean {
-    // Devuelve true si el token existe en localStorage
-    return !!this.getToken();
+    return !!this.currentUser()?.token;
   }
 
   logout() {
-    localStorage.removeItem('session');
     localStorage.clear(); // Borra todo (token, rol, id)
     this.currentUser.set(null);
   }

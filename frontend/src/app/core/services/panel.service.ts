@@ -8,10 +8,10 @@ import { Observable } from 'rxjs';
 })
 export class PanelService {
   private http = inject(HttpClient);
-  private apiUrl = `${environment.apiUrl}/panel/hoy`;
+  private apiBase = `${environment.apiUrl}/panel`;
 
-  // Para la petición HTTP
+  // Para el panel en vivo completo — requiere JWT admin o barbero
   getPanelInfo(): Observable<any> {
-    return this.http.get<any>(this.apiUrl);
+    return this.http.get<any>(`${this.apiBase}/hoy`);
   }
 }

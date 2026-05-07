@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
@@ -15,33 +15,27 @@ interface ApiResponse<T> {
   providedIn: 'root',
 })
 export class ServiciosService {
+  private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/servicios`;
 
-  constructor(private http: HttpClient) {}
-
   // Obtener servicios
-  getServicios(): Observable<ServicioModel[]> {
-    return this.http
-      .get<ApiResponse<ServicioModel[]>>(this.apiUrl)
-      .pipe(map((response) => response.data));
-  }
 
   getAll(): Observable<ServicioModel[]> {
-    return this.getServicios();
+    return this.http.get<ApiResponse<ServicioModel[]>>(this.apiUrl).pipe(map((r) => r.data));
   }
 
   // Crear un nuevo servicio
   create(servicio: Partial<ServicioModel>): Observable<ServicioModel> {
     return this.http
       .post<ApiResponse<ServicioModel>>(this.apiUrl, servicio)
-      .pipe(map((response) => response.data));
+      .pipe(map((r) => r.data));
   }
 
   // Actualizar un servicio (precio, duración)
   update(id: number, servicio: Partial<ServicioModel>): Observable<ServicioModel> {
     return this.http
       .patch<ApiResponse<ServicioModel>>(`${this.apiUrl}/${id}`, servicio)
-      .pipe(map((response) => response.data));
+      .pipe(map((r) => r.data));
   }
 
   // Eliminar un servicio

@@ -22,16 +22,14 @@ export class BarberosService {
 
   // Obtener solo activos (para clientes/panel público)
   getBarberosActivos(): Observable<BarberoModel[]> {
-    return this.http
-      .get<ApiResponse<BarberoModel[]>>(this.barberosUrl)
-      .pipe(map((response) => response.data));
+    return this.http.get<ApiResponse<BarberoModel[]>>(this.barberosUrl).pipe(map((r) => r.data));
   }
 
   // Obtener todos (incluyendo inactivos) para el Panel Admin
   getAll(): Observable<BarberoModel[]> {
     return this.http
       .get<ApiResponse<BarberoModel[]>>(`${this.barberosUrl}/admin/todos`)
-      .pipe(map((response) => response.data));
+      .pipe(map((r) => r.data));
   }
 
   create(barbero: Partial<BarberoModel>): Observable<BarberoModel> {
@@ -40,39 +38,17 @@ export class BarberosService {
       .pipe(map((response) => response.data));
   }
 
-  // Actualizar o hacer soft-delete (ej: enviando { activo: 0 })
+  // Actualizar o hacer soft-delete
   update(id: number, barbero: Partial<BarberoModel>): Observable<BarberoModel> {
     return this.http
       .patch<ApiResponse<BarberoModel>>(`${this.barberosUrl}/${id}`, barbero)
       .pipe(map((response) => response.data));
   }
 
-  // Decisión: soft-delete en lugar de borrado físico para preservar historial de citas
+  // soft-delete en lugar de hard-delete para preservar historial de citas
   toggleActivo(id: number, activo: boolean): Observable<any> {
     return this.http
       .patch<ApiResponse<any>>(`${this.barberosUrl}/${id}/activo`, { activo: activo ? 1 : 0 })
-      .pipe(map((response) => response.data));
-  }
-
-  getCitasHoy(barberoId: number): Observable<any> {
-    return this.http
-      .get<ApiResponse<any>>(`${this.apiBase}/citas/barbero/${barberoId}`)
-      .pipe(map((response) => response.data));
-  }
-
-  // Panel global para extraer los walk-ins en cola
-  getWalkinsPanel(): Observable<any> {
-    return this.http
-      .get<ApiResponse<any>>(`${this.apiBase}/panel/hoy`)
-      .pipe(map((response) => response.data));
-  }
-
-  updateWalkinEstado(
-    id: number,
-    estado: 'atendiendo' | 'completado' | 'cancelado',
-  ): Observable<any> {
-    return this.http
-      .patch<ApiResponse<any>>(`${this.apiBase}/walkins/${id}/estado`, { estado })
-      .pipe(map((response) => response.data));
+      .pipe(map((r) => r.data));
   }
 }

@@ -23,7 +23,7 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
     return true;
   }
 
-  // Si no tiene permiso, redirige al panel de flujo por defecto
-  router.navigate(['/panel-vivo']);
+  // Si no tiene permiso, redirige al panel de publico por defecto
+  router.navigate(['/panel-publico']);
   return false;
 };

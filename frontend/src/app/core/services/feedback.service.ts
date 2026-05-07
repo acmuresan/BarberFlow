@@ -12,6 +12,7 @@ export class FeedbackService {
   toast = signal<ToastData | null>(null);
 
   private activeRequests = 0; // Para manejar múltiples peticiones simultáneas
+  private timeoutId: any;
 
   showLoading() {
     this.activeRequests++;
@@ -27,8 +28,16 @@ export class FeedbackService {
   }
 
   showToast(message: string, type: 'success' | 'error') {
+    // Si había un temporizador corriendo, se anula
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+    }
+
     this.toast.set({ message, type });
-    // Auto-ocultar a los 3 segundos
-    setTimeout(() => this.toast.set(null), 3000);
+
+    // Empieza uno nuevo
+    this.timeoutId = setTimeout(() => {
+      this.toast.set(null);
+    }, 3000);
   }
 }

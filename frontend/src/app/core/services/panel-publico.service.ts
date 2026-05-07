@@ -1,9 +1,15 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
-export interface PanelPublicoData {
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  error?: string;
+}
+
+export interface PanelPublicoService {
   total_personas: number;
   tiempo_espera_estimado_min: number | null;
 }
@@ -14,7 +20,9 @@ export interface PanelPublicoData {
 export class PanelPublicoService {
   private http = inject(HttpClient);
 
-  getDatosPanel(): Observable<PanelPublicoData> {
-    return this.http.get<PanelPublicoData>(`${environment.apiUrl}/panel/publico`);
+  getDatosPanel(): Observable<PanelPublicoService> {
+    return this.http
+      .get<ApiResponse<PanelPublicoService>>(`${environment.apiUrl}/panel/publico`)
+      .pipe(map((r) => r.data));
   }
 }
