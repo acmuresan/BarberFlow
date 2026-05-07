@@ -1,39 +1,77 @@
-<div class="panel-container">
-  <header class="text-center">
-    <h1>BarberFlow</h1>
-    <p class="subtitle">Estado en tiempo real</p>
+<div class="pv-container">
+  <!-- HEADER — misma clase pv-header que panel-vivo -->
+  <header class="pv-header">
+    <div>
+      <h1
+        style="font-family: var(--font-display); font-size: 26px; color: var(--bf-white); margin: 0"
+      >
+        Panel en Vivo
+      </h1>
+      <p style="font-size: 12px; color: rgba(255, 255, 255, 0.7); margin: 0">
+        Actualizado: {{ lastUpdate() | date: 'HH:mm:ss' }}
+      </p>
+    </div>
+    <a routerLink="/login" class="pv-equipo-btn" aria-label="Acceder al inicio de sesión">
+      Login
+    </a>
   </header>
 
-  <div *ngIf="loading" class="loading-state">
-    <p>Conectando con la barbería...</p>
+  <!-- LOADING — mismo padding inline que panel-vivo -->
+  <div
+    *ngIf="loading"
+    class="d-flex flex-column align-items-center justify-content-center"
+    style="padding: 64px 24px"
+    role="status"
+    aria-live="polite"
+  >
+    <div class="bf-spinner" style="border-top-color: rgba(255, 255, 255, 0.9)"></div>
+    <p style="color: rgba(255, 255, 255, 0.7); margin-top: 16px; font-size: 14px">
+      Conectando con la barbería...
+    </p>
   </div>
 
-  <div *ngIf="error && !loading" class="error-state">
-    <p>⚠️ No se pudo obtener la información en este momento.</p>
+  <!-- ERROR -->
+  <div *ngIf="error && !loading" class="pv-error" role="alert">
+    <p style="color: rgba(255, 255, 255, 0.85)">No se pudo obtener la información</p>
+    <small style="color: rgba(255, 255, 255, 0.45)"
+      >Se reintentará automáticamente en 30 segundos</small
+    >
   </div>
 
-  <div *ngIf="!loading && !error && datos" class="datos-grid" aria-live="polite">
-    <div class="card">
-      <h3 id="label-personas">Personas en Espera</h3>
-      <span class="numero-gigante" aria-labelledby="label-personas">
-        {{ datos.total_personas || 0 }}
-      </span>
+  <!-- DATOS — pv-stats-grid idéntico al panel-vivo -->
+  <div *ngIf="!loading && !error && datos" class="pv-content" aria-live="polite">
+    <div class="pv-stats-grid">
+      <div class="pv-stat-card">
+        <span class="pv-stat-label">Personas<br />en espera</span>
+        <span class="pv-stat-value">{{ datos.total_personas || 0 }}</span>
+      </div>
+
+      <div class="pv-stat-card">
+        <span class="pv-stat-label">Tiempo<br />estimado</span>
+        <ng-container *ngIf="tiempoRedondeado() !== null; else sinEspera">
+          <span class="pv-stat-value">
+            {{ tiempoRedondeado() }}<small class="pv-stat-unit"> min</small>
+          </span>
+        </ng-container>
+        <ng-template #sinEspera>
+          <span class="pv-stat-value pv-stat-free">Vacío</span>
+        </ng-template>
+      </div>
     </div>
 
-    <div class="card">
-      <h3 id="label-tiempo">Tiempo Estimado</h3>
-      <ng-container *ngIf="datos.tiempo_espera_estimado_min !== null; else sinEspera">
-        <span class="numero-gigante" aria-labelledby="label-tiempo">
-          {{ datos.tiempo_espera_estimado_min }} <span class="visually-hidden">minutos</span>
-        </span>
-      </ng-container>
-      <ng-template #sinEspera>
-        <span class="texto-directo">¡Pásate ya!</span>
-      </ng-template>
+    <!-- Sin espera — se mantiene el mensaje para visitantes -->
+    <div *ngIf="datos.total_personas === 0" class="pv-empty">
+      <p style="font-size: 18px; font-weight: 600; color: var(--bf-white); margin: 0 0 6px">
+        ¡Sin esperas ahora mismo!
+      </p>
+      <p style="font-size: 13px; color: rgba(255, 255, 255, 0.65); margin: 0">
+        Es el momento perfecto para pasarte
+      </p>
     </div>
   </div>
+
+  <!-- FOOTER -->
+  <footer class="pv-footer">
+    <small>Se actualiza automáticamente cada 30 segundos</small>
+  </footer>
 </div>
-
-<footer class="text-center">
-  <small>Actualizado automáticamente cada 30s</small>
-</footer>

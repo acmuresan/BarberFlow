@@ -19,21 +19,27 @@ export class MisCitasComponent implements OnInit {
   private authService = inject(AuthService);
   private router = inject(Router);
 
-  // Signal para controlar el modal. Si tiene un número (ID), el modal se abre. Si es null, se cierra
   citas = signal<any[]>([]);
   isLoading = signal<boolean>(true);
+
+  // Signal para controlar el modal, si tiene un número (ID), el modal se abre, si no, se cierra
   citaACancelar = signal<number | null>(null);
 
-  // Estado para controlar que pestaña se ve
-  vistaActual = signal<'activas' | 'historial'>('activas');
-
-  citasActivas = computed(() =>
-    this.citas().filter((c) => c.estado === 'pendiente' || c.estado === 'confirmada'),
+  citasActivas = computed(
+    () =>
+      this.citas()
+        .filter((c) => c.estado === 'pendiente' || c.estado === 'confirmada')
+        .sort((a, b) => new Date(a.fecha_hora).getTime() - new Date(b.fecha_hora).getTime()), // Ascendente, las más próximas primero
   );
 
-  citasHistorial = computed(() =>
-    this.citas().filter((c) => c.estado === 'completada' || c.estado === 'cancelada'),
+  citasHistorial = computed(
+    () =>
+      this.citas()
+        .filter((c) => c.estado === 'completada' || c.estado === 'cancelada')
+        .sort((a, b) => new Date(b.fecha_hora).getTime() - new Date(a.fecha_hora).getTime()), // Descendente,las más recientes primero
   );
+
+  vistaActiva: 'activas' | 'historial' = 'activas';
 
   ngOnInit(): void {
     this.cargarCitas();
@@ -52,12 +58,10 @@ export class MisCitasComponent implements OnInit {
       .getCitasByUsuario(user.usuario_id.toString())
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
-        next: (res) => {
-          if (res && res.data) {
-            this.citas.set(res.data);
-          }
+        next: (citas) => {
+          this.citas.set(citas);
         },
-        error: (err) => this.feedback.showToast('Error de conexión.', 'error'),
+        error: () => this.feedback.showToast('Error de conexión', 'error'),
       });
   }
 
@@ -77,24 +81,18 @@ export class MisCitasComponent implements OnInit {
 
     this.citasService.cambiarEstado(id, 'cancelada').subscribe({
       next: () => {
-        // El array se actualiza dentro del Signal
-        const currentCitas = this.citas();
-        const citaIndex = currentCitas.findIndex((c) => c.id === id);
-        if (citaIndex !== -1) {
-          currentCitas[citaIndex].estado = 'cancelada';
-          this.citas.set([...currentCitas]); // Fuerza la reactividad
-        }
-
+        // La cita cancelada aparecerá automáticamente en historial gracias a citasHistorial computed() sin ninguna acción adicional
+        const actualizadas = this.citas().map((c) =>
+          c.id === id ? { ...c, estado: 'cancelada' } : c,
+        );
+        this.citas.set(actualizadas);
+        this.vistaActiva = 'historial';
         this.feedback.showToast('Cita cancelada correctamente', 'success');
         this.cerrarModal();
       },
       error: (err) => {
-        console.error('Error al cancelar:', err);
         if (err.status === 403) {
-          this.feedback.showToast(
-            'Acceso denegado: El servidor cree que no tienes permiso.',
-            'error',
-          );
+          this.feedback.showToast('No tienes permiso para cancelar esta cita.', 'error');
         } else {
           this.feedback.showToast('Error al intentar cancelar la cita.', 'error');
         }
@@ -106,12 +104,12 @@ export class MisCitasComponent implements OnInit {
   // Helper para asignar clases CSS según el estado
   getEstadoClass(estado: string): string {
     const clases: { [key: string]: string } = {
-      pendiente: 'chip-warning',
-      confirmada: 'chip-info',
-      completada: 'chip-success',
-      cancelada: 'chip-danger',
+      pendiente: 'chip-pendiente',
+      confirmada: 'chip-confirmada',
+      completada: 'chip-completada',
+      cancelada: 'chip-cancelada',
     };
-    return clases[estado] || 'chip-default';
+    return clases[estado] || '';
   }
 
   cerrarSesion(): void {

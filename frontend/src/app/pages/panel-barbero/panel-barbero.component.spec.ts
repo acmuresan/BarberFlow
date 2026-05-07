@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { PanelBarberoComponent } from './panel-barbero.component';
+import { BarberoPanelComponent } from './panel-barbero.component';
 
 describe('PanelBarbero', () => {
-  let component: PanelBarberoComponent;
-  let fixture: ComponentFixture<PanelBarberoComponent>;
+  let component: BarberoPanelComponent;
+  let fixture: ComponentFixture<BarberoPanelComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PanelBarberoComponent],
+      imports: [BarberoPanelComponent],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(PanelBarberoComponent);
+    fixture = TestBed.createComponent(BarberoPanelComponent);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

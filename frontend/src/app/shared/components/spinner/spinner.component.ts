@@ -6,24 +6,8 @@ import { FeedbackService } from '../../../core/services/feedback.service';
   selector: 'app-spinner',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="overlay" *ngIf="feedback.isLoading()">
-      <div class="spinner"></div>
-    </div>
-  `,
-  styles: [
-    `
-      .overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.5);
-        z-index: 9999;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-    `,
-  ],
+  templateUrl: './spinner.component.html',
+  styleUrls: ['./spinner.component.css'],
 })
 export class SpinnerComponent {
   feedback = inject(FeedbackService);

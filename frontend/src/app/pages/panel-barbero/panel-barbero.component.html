@@ -1,149 +1,320 @@
-<div
-  class="container-fluid p-3 auth-container"
-  role="main"
-  aria-label="Panel de control del barbero"
->
-  <header class="mb-4 d-flex justify-content-between align-items-center">
+<div class="bf-panel" role="main" aria-label="Panel de control del barbero">
+  <!-- HEADER -->
+  <div class="bf-page-header">
     <div>
-      <h2 class="h4 fw-bold mb-1" id="panel-title">Mi Panel de Hoy</h2>
-      <p class="text-muted small mb-0" aria-hidden="true">Gestiona tus citas y clientes walk-in</p>
+      <h1 class="mb-0">Mi Panel</h1>
+      <small style="color: var(--bf-muted); font-size: 12px">Gestiona tus citas y cola</small>
     </div>
-    <button
-      (click)="cerrarSesion()"
-      class="btn btn-sm btn-outline-danger"
-      aria-label="Cerrar sesión de barbero"
-    >
-      Cerrar Sesión
-    </button>
-  </header>
+    <div class="d-flex gap-2 align-items-center">
+      <!-- Enlace al panel en vivo -->
+      <a
+        routerLink="/panel-vivo"
+        class="btn-bf-secondary btn-bf-sm"
+        style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px"
+        aria-label="Ver panel en vivo"
+      >
+        Panel en vivo
+      </a>
+      <button (click)="cerrarSesion()" class="btn-bf-danger btn-bf-sm" aria-label="Cerrar sesión">
+        Salir
+      </button>
+    </div>
+  </div>
 
-  <section class="mb-5" aria-labelledby="citas-title">
-    <h3 id="citas-title" class="h6 text-uppercase fw-bold text-primary mb-3">📅 Citas de Hoy</h3>
-
-    <div
-      *ngIf="citas().length === 0"
-      class="alert alert-light border shadow-sm"
-      role="status"
-      aria-live="polite"
-    >
-      No tienes citas programadas para hoy.
+  <div class="bf-main">
+    <!-- NAV TABS PRINCIPAL -->
+    <div class="bf-tabs mb-4" role="tablist" aria-label="Secciones del panel">
+      <button
+        role="tab"
+        [attr.aria-selected]="seccion === 'citas'"
+        [class.active]="seccion === 'citas'"
+        (click)="seccion = 'citas'"
+        class="bf-tab"
+      >
+        Citas
+        <span class="bf-tab-badge" *ngIf="citasPendientes().length > 0">
+          {{ citasPendientes().length }}
+        </span>
+      </button>
+      <button
+        role="tab"
+        [attr.aria-selected]="seccion === 'walkins'"
+        [class.active]="seccion === 'walkins'"
+        (click)="seccion = 'walkins'"
+        class="bf-tab"
+      >
+        Walk-ins
+        <span class="bf-tab-badge" *ngIf="walkinsActivos().length > 0">
+          {{ walkinsActivos().length }}
+        </span>
+      </button>
     </div>
 
-    <div class="row g-3" aria-live="polite" role="list">
-      <div *ngFor="let cita of citas()" class="col-12" role="listitem">
-        <div
-          class="card border-0 shadow-sm border-start border-4"
-          [class.border-warning]="cita.estado === 'pendiente'"
-          [class.border-primary]="cita.estado === 'confirmada'"
-          [class.border-success]="cita.estado === 'completada'"
+    <!-- LOADING -->
+    <div *ngIf="loading()" class="bf-empty" role="status" aria-live="polite">
+      <div class="bf-spinner mb-3"></div>
+      <p style="color: var(--bf-muted)">Cargando datos...</p>
+    </div>
+
+    <!-- ====== SECCIÓN CITAS ====== -->
+    <section *ngIf="!loading() && seccion === 'citas'" role="tabpanel">
+      <!-- Sub-tabs Activas / Historial — mismo patrón que walk-ins -->
+      <div class="bf-subtabs mb-3">
+        <button
+          (click)="subVistaCitas = 'activas'"
+          [class.bf-subtab--active]="subVistaCitas === 'activas'"
+          class="bf-subtab"
         >
-          <div class="card-body d-flex flex-column gap-3">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <span
-                  class="badge bg-dark me-2"
-                  [attr.aria-label]="'Hora: ' + (cita.fecha_hora | date: 'HH:mm')"
-                >
-                  {{ cita.fecha_hora | date: 'HH:mm' }}
-                </span>
-                <strong>{{ cita.cliente_nombre }}</strong>
-                <div class="text-muted small mt-1">
-                  {{ cita.servicio_nombre }} ({{ cita.precio }}€)
-                </div>
-              </div>
+          Hoy
+          <span class="bf-tab-badge" *ngIf="citasActivas().length > 0">
+            {{ citasActivas().length }}
+          </span>
+        </button>
+        <button
+          (click)="subVistaCitas = 'historial'"
+          [class.bf-subtab--active]="subVistaCitas === 'historial'"
+          class="bf-subtab"
+        >
+          Historial
+        </button>
+      </div>
+
+      <!-- ── SUB-VISTA: ACTIVAS (pendiente + confirmada) ── -->
+      <div *ngIf="subVistaCitas === 'activas'">
+        <div *ngIf="citasActivas().length === 0" class="bf-empty">
+          <h3>Sin citas pendientes</h3>
+          <p>No tienes citas activas para hoy</p>
+        </div>
+
+        <div class="d-flex flex-column gap-3" aria-live="polite" role="list">
+          <div
+            *ngFor="let cita of citasActivas()"
+            class="bf-cita-card"
+            role="listitem"
+            [class.bf-cita-card--pendiente]="cita.estado === 'pendiente'"
+            [class.bf-cita-card--confirmada]="cita.estado === 'confirmada'"
+          >
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="bf-cita-hora">{{ cita.fecha_hora | date: 'dd/MM/yyyy HH:mm' }}</span>
               <span
-                class="badge"
-                [class.bg-warning]="cita.estado === 'pendiente'"
-                [class.text-dark]="cita.estado === 'pendiente'"
-                [class.bg-primary]="cita.estado === 'confirmada'"
-                [class.bg-success]="cita.estado === 'completada'"
+                class="chip"
+                [class.chip-pendiente]="cita.estado === 'pendiente'"
+                [class.chip-confirmada]="cita.estado === 'confirmada'"
               >
-                {{ cita.estado | uppercase }}
+                {{ cita.estado | titlecase }}
               </span>
             </div>
+            <p class="bf-cita-nombre mb-1">{{ cita.cliente_nombre }}</p>
+            <p class="bf-cita-servicio mb-3">{{ cita.servicio_nombre }} · {{ cita.precio }}€</p>
 
-            <div
-              class="btn-group btn-group-sm w-100 mt-2"
-              *ngIf="cita.estado === 'pendiente' || cita.estado === 'confirmada'"
-            >
+            <!-- Acciones según estado -->
+            <div class="d-flex gap-2">
               <ng-container *ngIf="cita.estado === 'pendiente'">
                 <button
                   (click)="cambiarEstadoCita(cita.id, 'confirmada')"
-                  class="btn btn-outline-primary"
+                  class="btn-bf-sm btn-action-confirm"
                   aria-label="Confirmar cita"
                 >
                   Confirmar
                 </button>
                 <button
                   (click)="cambiarEstadoCita(cita.id, 'cancelada')"
-                  class="btn btn-outline-danger"
+                  class="btn-bf-sm btn-action-cancel"
                   aria-label="Cancelar cita"
                 >
                   Cancelar
                 </button>
               </ng-container>
-
               <ng-container *ngIf="cita.estado === 'confirmada'">
                 <button
                   (click)="cambiarEstadoCita(cita.id, 'completada')"
-                  class="btn btn-success"
-                  aria-label="Finalizar cita"
+                  class="btn-bf-sm btn-action-complete"
+                  aria-label="Marcar como completada"
                 >
-                  Completar Cita
+                  Completar
                 </button>
               </ng-container>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
 
-  <section aria-labelledby="walkins-title">
-    <h3 id="walkins-title" class="h6 text-uppercase fw-bold text-danger mb-3">🚶 Cola Walk-ins</h3>
+      <!-- ── SUB-VISTA: HISTORIAL (completada + cancelada) ── -->
+      <div *ngIf="subVistaCitas === 'historial'">
+        <div *ngIf="citasHistorial().length === 0" class="bf-empty">
+          <h3>Historial vacío</h3>
+          <p>Las citas completadas y canceladas aparecerán aquí</p>
+        </div>
 
-    <div class="row g-3" aria-live="polite" role="list">
-      <div *ngFor="let w of walkins()" class="col-12" role="listitem">
-        <div
-          class="card border-0 shadow-sm border-start border-4"
-          [class.border-warning]="w.estado === 'esperando'"
-          [class.border-info]="w.estado === 'atendiendo'"
-        >
+        <div class="d-flex flex-column gap-3" role="list">
           <div
-            class="card-body d-flex flex-mobile-col justify-content-between align-items-md-center align-items-start gap-3"
+            *ngFor="let cita of citasHistorial()"
+            class="bf-cita-card bf-cita-card--completada"
+            role="listitem"
+            [style.opacity]="cita.estado === 'cancelada' ? '0.65' : '1'"
           >
-            <div>
-              <h6 class="mb-0">{{ w.nombre }}</h6>
-              <small
-                class="text-muted"
-                [attr.aria-label]="'Hora de llegada: ' + (w.hora_llegada | date: 'shortTime')"
+            <div class="d-flex align-items-center justify-content-between mb-2">
+              <span class="bf-cita-hora">{{ cita.fecha_hora | date: 'dd/MM/yyyy HH:mm' }}</span>
+              <span
+                class="chip"
+                [class.chip-completada]="cita.estado === 'completada'"
+                [class.chip-cancelada]="cita.estado === 'cancelada'"
               >
-                Espera: {{ w.hora_llegada | date: 'shortTime' }}
-              </small>
+                {{ cita.estado | titlecase }}
+              </span>
             </div>
-
-            <div class="btn-group btn-group-sm w-100-mobile">
-              <button
-                *ngIf="w.estado === 'esperando'"
-                (click)="cambiarEstadoWalkin(w.id, 'atendiendo')"
-                class="btn btn-outline-primary"
-                [attr.aria-label]="'Comenzar a atender a ' + w.nombre"
-              >
-                Atender
-              </button>
-
-              <button
-                *ngIf="w.estado === 'atendiendo'"
-                (click)="cambiarEstadoWalkin(w.id, 'completado')"
-                class="btn btn-success"
-                [attr.aria-label]="'Finalizar servicio de ' + w.nombre"
-              >
-                Finalizar
-              </button>
-            </div>
+            <p class="bf-cita-nombre mb-1">{{ cita.cliente_nombre }}</p>
+            <p class="bf-cita-servicio mb-0">{{ cita.servicio_nombre }} · {{ cita.precio }}€</p>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+
+    <!-- ====== SECCIÓN WALK-INS ====== -->
+    <section *ngIf="!loading() && seccion === 'walkins'" role="tabpanel">
+      <!-- Formulario añadir walk-in -->
+      <div class="bf-card mb-4">
+        <p class="fw-bold mb-3" style="color: var(--bf-text); font-size: 14px">
+          + Añadir cliente sin cita
+        </p>
+        <form [formGroup]="walkinForm" (ngSubmit)="registrarWalkin()">
+          <div class="d-flex gap-2 mb-2">
+            <input
+              formControlName="nombre"
+              type="text"
+              placeholder="Nombre del cliente"
+              class="form-control"
+              aria-label="Nombre del cliente walk-in"
+              [attr.aria-invalid]="
+                walkinForm.get('nombre')?.invalid && walkinForm.get('nombre')?.touched
+                  ? 'true'
+                  : 'false'
+              "
+            />
+            <button
+              type="submit"
+              [disabled]="walkinForm.invalid || guardandoWalkin()"
+              class="btn-bf-primary btn-bf-sm"
+              style="white-space: nowrap; width: auto"
+            >
+              {{ guardandoWalkin() ? '...' : 'Añadir' }}
+            </button>
+          </div>
+          <small style="color: var(--bf-muted); font-size: 12px">
+            El cliente quedará en estado "esperando"
+          </small>
+        </form>
+      </div>
+
+      <!-- Sub-tabs En cola / Historial -->
+      <div class="bf-subtabs mb-3">
+        <button
+          (click)="subVistaWalkin = 'activos'"
+          [class.bf-subtab--active]="subVistaWalkin === 'activos'"
+          class="bf-subtab"
+        >
+          En cola
+          <span class="bf-tab-badge" *ngIf="walkinsActivos().length > 0">
+            {{ walkinsActivos().length }}
+          </span>
+        </button>
+        <button
+          (click)="subVistaWalkin = 'historial'"
+          [class.bf-subtab--active]="subVistaWalkin === 'historial'"
+          class="bf-subtab"
+        >
+          Historial
+        </button>
+      </div>
+
+      <!-- Lista activos -->
+      <div
+        *ngIf="subVistaWalkin === 'activos'"
+        class="d-flex flex-column gap-3"
+        aria-live="polite"
+        role="list"
+      >
+        <div *ngIf="walkinsActivos().length === 0" class="bf-empty">
+          <h3>Sin cola</h3>
+          <p>No hay clientes esperando ahora mismo</p>
+        </div>
+
+        <div
+          *ngFor="let w of walkinsActivos()"
+          class="bf-walkin-card"
+          role="listitem"
+          [class.bf-walkin-card--esperando]="w.estado === 'esperando'"
+          [class.bf-walkin-card--atendiendo]="w.estado === 'atendiendo'"
+        >
+          <div class="bf-walkin-info">
+            <strong class="bf-walkin-nombre">{{ w.nombre }}</strong>
+            <small class="bf-walkin-hora">
+              Llegada: {{ w.hora_llegada || w.fecha_llegada | date: 'HH:mm' }}h
+            </small>
+            <span
+              class="chip mt-1"
+              [class.chip-esperando]="w.estado === 'esperando'"
+              [class.chip-atendiendo]="w.estado === 'atendiendo'"
+            >
+              {{ w.estado | titlecase }}
+            </span>
+          </div>
+          <div class="bf-walkin-actions">
+            <button
+              *ngIf="w.estado === 'esperando'"
+              (click)="cambiarEstadoWalkin(w.id, 'atendiendo')"
+              class="btn-action-atender btn-bf-sm"
+              [attr.aria-label]="'Atender a ' + w.nombre"
+            >
+              Atender
+            </button>
+            <button
+              *ngIf="w.estado === 'atendiendo'"
+              (click)="cambiarEstadoWalkin(w.id, 'completado')"
+              class="btn-action-complete btn-bf-sm"
+              [attr.aria-label]="'Finalizar ' + w.nombre"
+            >
+              Finalizar
+            </button>
+            <button
+              *ngIf="w.estado === 'esperando'"
+              (click)="cambiarEstadoWalkin(w.id, 'cancelado')"
+              class="btn-action-cancel btn-bf-sm"
+              [attr.aria-label]="w.nombre + ' se marchó'"
+            >
+              Se marchó
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Historial walk-ins -->
+      <div *ngIf="subVistaWalkin === 'historial'" class="d-flex flex-column gap-3" role="list">
+        <div *ngIf="walkinsHistorial().length === 0" class="bf-empty">
+          <h3>Historial vacío</h3>
+          <p>Aún no hay clientes en el historial de hoy</p>
+        </div>
+        <div
+          *ngFor="let w of walkinsHistorial()"
+          class="bf-walkin-card bf-walkin-card--historial"
+          role="listitem"
+          [style.opacity]="w.estado === 'cancelado' ? '0.65' : '1'"
+        >
+          <div class="bf-walkin-info">
+            <strong class="bf-walkin-nombre">{{ w.nombre }}</strong>
+            <small class="bf-walkin-hora">
+              Llegada: {{ w.hora_llegada || w.fecha_llegada | date: 'HH:mm' }}h
+            </small>
+            <span
+              class="chip mt-1"
+              [class.chip-completada]="w.estado === 'completado'"
+              [class.chip-cancelada]="w.estado === 'cancelado'"
+            >
+              {{ w.estado | titlecase }}
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
 </div>

@@ -1,12 +1,8 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-  </head>
-  <body>
-    <div></div>
-  </body>
-  <router-outlet></router-outlet>
-</html>
+<!-- Spinner global, visible en todas las rutas durante peticiones HTTP -->
+<app-spinner />
+
+<!-- Toast global, visible en todas las rutas para mensajes de feedback -->
+<app-toast />
+
+<!-- Router outlet,Angular renderiza aquí el componente de la ruta activa -->
+<router-outlet />

@@ -1,399 +1,331 @@
-<div class="admin-container p-4 max-w-4xl mx-auto" aria-label="Panel de Administración">
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold text-gray-900 m-0">Gestión de Barbería</h1>
-    <button
-      (click)="cerrarSesion()"
-      class="px-3 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200 transition font-medium text-sm shadow-sm"
-    >
-      Cerrar Sesión
-    </button>
+<div class="bf-admin" aria-label="Panel de Administración">
+  <!-- HEADER -->
+  <div class="bf-page-header">
+    <h1 class="mb-0">Gestión de Barbería</h1>
+    <div class="d-flex gap-2 align-items-center">
+      <!-- Enlace al panel en vivo -->
+      <a
+        routerLink="/panel-vivo"
+        class="btn-bf-secondary btn-bf-sm"
+        style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px"
+        aria-label="Ver panel en vivo"
+      >
+        Panel en vivo
+      </a>
+      <button (click)="cerrarSesion()" class="btn-bf-danger btn-bf-sm" aria-label="Cerrar sesión">
+        Salir
+      </button>
+    </div>
   </div>
 
-  <div
-    *ngIf="uiMessage"
-    aria-live="assertive"
-    role="alert"
-    class="mb-4 p-3 rounded shadow-sm text-sm font-medium transition-all"
-    [ngClass]="{
-      'bg-green-100 text-green-800 border border-green-200': uiMessage.type === 'success',
-      'bg-red-100 text-red-800 border border-red-200': uiMessage.type === 'error',
-    }"
-  >
-    {{ uiMessage.text }}
-  </div>
-
-  <div role="tablist" class="flex gap-2 mb-6 bg-gray-200 p-1 rounded-lg">
-    <button
-      (click)="view = 'dashboard'; resetForms()"
-      [class.bg-white]="view === 'dashboard'"
-      [class.shadow]="view === 'dashboard'"
-      class="flex-1 py-2 rounded-md transition font-bold text-blue-800 focus:outline-none"
+  <!-- FEEDBACK MESSAGE -->
+  <div class="bf-main">
+    <div
+      *ngIf="uiMessage"
+      aria-live="assertive"
+      role="alert"
+      class="mb-4"
+      [class.alert-bf-success]="uiMessage.type === 'success'"
+      [class.alert-bf-error]="uiMessage.type === 'error'"
     >
-      Panel en Vivo
-    </button>
-    <button
-      (click)="view = 'barberos'; resetForms()"
-      [class.bg-white]="view === 'barberos'"
-      [class.shadow]="view === 'barberos'"
-      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none"
-    >
-      Barberos
-    </button>
-    <button
-      (click)="view = 'servicios'; resetForms()"
-      [class.bg-white]="view === 'servicios'"
-      [class.shadow]="view === 'servicios'"
-      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none"
-    >
-      Servicios
-    </button>
-    <button
-      (click)="view = 'citas'; resetForms()"
-      [class.bg-white]="view === 'citas'"
-      [class.shadow]="view === 'citas'"
-      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none"
-    >
-      Gestión Citas
-    </button>
-    <button
-      (click)="view = 'walkins'; resetForms()"
-      [class.bg-white]="view === 'walkins'"
-      [class.shadow]="view === 'walkins'"
-      class="flex-1 py-2 rounded-md transition font-medium focus:outline-none"
-    >
-      Cola Walk-ins
-    </button>
-  </div>
-
-  <!--WALK-IN-->
-  <section *ngIf="view === 'dashboard'" class="fade-in space-y-6">
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-      <div
-        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500 flex items-center justify-between"
-      >
-        <div>
-          <p class="text-sm text-gray-500 font-medium uppercase">Citas Hoy (Pendientes)</p>
-          <p class="text-3xl font-bold text-gray-900">{{ stats().citasPendientesHoy }}</p>
-        </div>
-        <div class="text-4xl">📅</div>
-      </div>
-
-      <div
-        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500 flex items-center justify-between"
-      >
-        <div>
-          <p class="text-sm text-gray-500 font-medium uppercase">Walk-ins Esperando</p>
-          <p class="text-3xl font-bold text-gray-900">{{ stats().esperando }}</p>
-        </div>
-        <div class="text-4xl">🛋️</div>
-      </div>
-
-      <div
-        class="bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-400 flex items-center justify-between"
-      >
-        <div>
-          <p class="text-sm text-gray-500 font-medium uppercase">Siendo Atendidos</p>
-          <p class="text-3xl font-bold text-gray-900">{{ stats().atendiendo }}</p>
-        </div>
-        <div class="text-4xl">✂️</div>
-      </div>
+      {{ uiMessage.text }}
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">📅 Agenda de Hoy</h3>
+    <!-- NAV TABS -->
+    <div class="bf-tabs mb-4" role="tablist" aria-label="Secciones del panel admin">
+      <button
+        (click)="cambiarVista('dashboard')"
+        [class.active]="view === 'dashboard'"
+        class="bf-tab"
+        role="tab"
+      >
+        Panel
+      </button>
+      <button
+        (click)="cambiarVista('barberos')"
+        [class.active]="view === 'barberos'"
+        class="bf-tab"
+        role="tab"
+      >
+        Barberos
+      </button>
+      <button
+        (click)="cambiarVista('servicios')"
+        [class.active]="view === 'servicios'"
+        class="bf-tab"
+        role="tab"
+      >
+        Servicios
+      </button>
+      <button
+        (click)="cambiarVista('citas')"
+        [class.active]="view === 'citas'"
+        class="bf-tab"
+        role="tab"
+      >
+        Citas
+      </button>
+      <button
+        (click)="cambiarVista('walkins')"
+        [class.active]="view === 'walkins'"
+        class="bf-tab"
+        role="tab"
+      >
+        Walk-ins
+      </button>
+    </div>
 
-        <div *ngIf="citasHoy().length === 0" class="text-center text-gray-500 py-6">
-          No hay citas programadas para hoy.
-        </div>
-
-        <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-          <div
-            *ngFor="let cita of citasHoy()"
-            class="p-3 border rounded-lg flex justify-between items-center bg-gray-50"
-            [class.border-blue-300]="cita.estado === 'confirmada'"
-            [class.opacity-50]="cita.estado === 'completada'"
-          >
+    <!-- DASHBOARD -->
+    <section *ngIf="view === 'dashboard'" class="admin-section-fade">
+      <!-- Stats cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-4">
+          <div class="bf-stat-card bf-stat-card--blue">
             <div>
-              <span class="font-bold text-lg text-blue-900"
-                >{{ cita.fecha_hora | date: 'HH:mm' }}h</span
-              >
-              <span
-                class="ml-2 px-2 py-0.5 text-xs rounded-full uppercase font-bold"
-                [ngClass]="{
-                  'bg-yellow-200 text-yellow-800': cita.estado === 'pendiente',
-                  'bg-blue-200 text-blue-800': cita.estado === 'confirmada',
-                  'bg-green-200 text-green-800': cita.estado === 'completada',
-                }"
-              >
-                {{ cita.estado }}
-              </span>
-              <p class="text-sm font-medium text-gray-900 mt-1">
-                {{ cita.cliente_nombre || 'Usuario ' + cita.usuarios_id }}
-              </p>
-              <p class="text-xs text-gray-500">
-                {{ cita.barbero_nombre }} - {{ cita.servicio_nombre }}
-              </p>
+              <p class="bf-stat-label">Citas Hoy</p>
+              <p class="bf-stat-num">{{ stats().citasPendientesHoy }}</p>
             </div>
-            <button
-              (click)="view = 'citas'"
-              class="text-blue-600 text-sm font-medium hover:underline"
-            >
-              Gestionar
-            </button>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="bf-stat-card bf-stat-card--purple">
+            <div>
+              <p class="bf-stat-label">Esperando</p>
+              <p class="bf-stat-num">{{ stats().esperando }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="bf-stat-card bf-stat-card--orange">
+            <div>
+              <p class="bf-stat-label">Atendiendo</p>
+              <p class="bf-stat-num">{{ stats().atendiendo }}</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-        <h3
-          class="text-lg font-bold text-gray-800 mb-4 border-b pb-2 flex justify-between items-center"
+      <!-- Agenda + Walk-ins en vivo -->
+      <div class="row g-4">
+        <!-- Agenda hoy -->
+        <div class="col-12 col-lg-6">
+          <div class="bf-card h-100">
+            <h3 class="bf-card-title mb-4">Agenda de Hoy</h3>
+            <div *ngIf="citasHoy().length === 0" class="bf-empty">
+              <p>No hay citas para hoy</p>
+            </div>
+            <div class="admin-scroll-list">
+              <div
+                *ngFor="let cita of citasHoy()"
+                class="bf-list-item"
+                [class.bf-list-item--confirmada]="cita.estado === 'confirmada'"
+                [class.bf-list-item--completada]="cita.estado === 'completada'"
+              >
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="bf-list-hora">{{ cita.fecha_hora | date: 'HH:mm' }}h</span>
+                    <span
+                      class="chip"
+                      [class.chip-pendiente]="cita.estado === 'pendiente'"
+                      [class.chip-confirmada]="cita.estado === 'confirmada'"
+                      [class.chip-completada]="cita.estado === 'completada'"
+                      >{{ cita.estado }}</span
+                    >
+                  </div>
+                  <p class="bf-list-nombre mb-0">
+                    {{ cita.cliente_nombre || 'Usuario ' + cita.usuarios_id }}
+                  </p>
+                  <small class="bf-list-meta"
+                    >{{ cita.barbero_nombre }} — {{ cita.servicio_nombre }}</small
+                  >
+                </div>
+                <button (click)="view = 'citas'" class="btn-bf-link">Gestionar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Walk-ins en vivo -->
+        <div class="col-12 col-lg-6">
+          <div class="bf-card h-100">
+            <div class="mb-4">
+              <h3 class="bf-card-title mb-0">Walk-ins en local</h3>
+            </div>
+            <div *ngIf="walkinsEnCola().length === 0" class="bf-empty">
+              <p>El salón está vacío</p>
+            </div>
+            <div class="admin-scroll-list">
+              <div
+                *ngFor="let w of walkinsEnCola()"
+                class="bf-list-item"
+                [class.bf-list-item--esperando]="w.estado === 'esperando'"
+                [class.bf-list-item--atendiendo]="w.estado === 'atendiendo'"
+              >
+                <div>
+                  <p class="bf-list-nombre mb-1">{{ w.nombre }}</p>
+                  <small class="bf-walkin-hora"
+                    >Llegada: {{ w.hora_llegada || w.fecha_llegada | date: 'HH:mm' }}h</small
+                  >
+                  <br />
+                  <span
+                    class="chip mt-1"
+                    [class.chip-esperando]="w.estado === 'esperando'"
+                    [class.chip-atendiendo]="w.estado === 'atendiendo'"
+                    >{{ w.estado }}</span
+                  >
+                </div>
+                <button (click)="view = 'walkins'" class="btn-bf-link">Gestionar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!--BARBEROS -->
+    <section *ngIf="view === 'barberos'" class="admin-section-fade">
+      <div class="bf-card mb-4">
+        <h2 class="bf-card-title mb-4">{{ editingId ? 'Editar' : 'Nuevo' }} Barbero</h2>
+        <form
+          [formGroup]="barberoForm"
+          (ngSubmit)="onSaveBarbero()"
+          class="d-flex flex-column gap-3"
         >
-          <span>🚶‍♂️ Walk-ins (En local)</span>
-          <span class="flex h-3 w-3 relative">
-            <span
-              class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"
-            ></span>
-            <span class="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-          </span>
-        </h3>
-
-        <div *ngIf="walkinsEnCola().length === 0" class="text-center text-gray-500 py-6">
-          El sofá está vacío.
-        </div>
-
-        <div class="space-y-3 max-h-96 overflow-y-auto pr-2">
-          <div
-            *ngFor="let w of walkinsEnCola()"
-            class="p-3 border rounded-lg flex justify-between items-center bg-gray-50"
-            [class.border-purple-300]="w.estado === 'esperando'"
-            [class.border-orange-300]="w.estado === 'atendiendo'"
-          >
-            <div>
-              <p class="font-bold text-gray-900">{{ w.nombre }}</p>
-              <p class="text-xs text-gray-500">Llegada: {{ w.fecha_llegada | date: 'HH:mm' }}h</p>
-              <span
-                class="inline-block mt-1 px-2 py-0.5 text-xs rounded-full uppercase font-bold"
-                [ngClass]="{
-                  'bg-purple-200 text-purple-800': w.estado === 'esperando',
-                  'bg-orange-200 text-orange-800': w.estado === 'atendiendo',
-                }"
-              >
-                {{ w.estado }}
-              </span>
-            </div>
-            <button
-              (click)="view = 'walkins'"
-              class="text-purple-600 text-sm font-medium hover:underline"
-            >
-              Gestionar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section *ngIf="view === 'barberos'" class="fade-in">
-    <div class="card mb-6 p-4 bg-white shadow rounded">
-      <h2 class="font-semibold mb-4 text-gray-800">{{ editingId ? 'Editar' : 'Nuevo' }} Barbero</h2>
-
-      <form [formGroup]="barberoForm" (ngSubmit)="onSaveBarbero()" class="space-y-4">
-        <div>
-          <input
-            formControlName="nombre"
-            placeholder="Nombre completo"
-            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div>
+          <input formControlName="nombre" placeholder="Nombre completo" class="form-control" />
           <input
             formControlName="especialidad"
             placeholder="Ej: Degradados, Barba"
-            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+            class="form-control"
           />
-        </div>
-        <div>
           <input
             type="email"
             formControlName="email"
-            placeholder="Correo electrónico de acceso"
-            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
+            placeholder="Email de acceso"
+            class="form-control"
           />
-        </div>
-        <div>
-          <input
-            type="password"
-            formControlName="password"
-            [placeholder]="editingId ? 'Nueva contraseña (opcional)' : 'Contraseña de acceso'"
-            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-          />
-          <p *ngIf="editingId" class="text-xs text-gray-500 mt-1">
-            Deja en blanco para mantener la contraseña actual.
-          </p>
-        </div>
+          <div>
+            <input
+              type="password"
+              formControlName="password"
+              [placeholder]="editingId ? 'Nueva contraseña (opcional)' : 'Contraseña de acceso'"
+              class="form-control"
+            />
+            <small *ngIf="editingId" style="color: var(--bf-muted); font-size: 12px"
+              >Deja en blanco para mantener la actual</small
+            >
+          </div>
+          <div class="d-flex gap-3">
+            <button
+              type="submit"
+              [disabled]="barberoForm.invalid || isLoading()"
+              class="btn-bf-primary"
+            >
+              {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Crear Barbero' }}
+            </button>
+            <button *ngIf="editingId" (click)="resetForms()" type="button" class="btn-bf-secondary">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
 
-        <div class="flex gap-2 pt-2">
-          <button
-            type="submit"
-            [disabled]="barberoForm.invalid || isLoading()"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition font-medium flex-1"
-          >
-            <span *ngIf="isLoading()" class="mr-2">⏳</span>
-            {{
-              isLoading()
-                ? 'Guardando...'
-                : editingId
-                  ? 'Actualizar Barbero'
-                  : 'Crear Barbero y Cuenta'
-            }}
-          </button>
-          <button
-            *ngIf="editingId"
-            (click)="resetForms()"
-            type="button"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 border border-gray-300"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <div class="space-y-3">
-      <div
-        *ngFor="let b of barberos()"
-        class="flex justify-between items-center p-4 border rounded bg-white shadow-sm hover:shadow transition"
-      >
-        <div>
-          <p
-            class="font-bold text-gray-900"
-            [class.line-through]="!b.activo"
-            [class.text-gray-400]="!b.activo"
-          >
-            {{ b.nombre }}
-            <span *ngIf="!b.activo" class="text-xs text-red-500 font-normal ml-2">(De baja)</span>
-          </p>
-          <span class="text-sm text-gray-500">{{ b.especialidad }}</span>
-        </div>
-        <div class="flex gap-2">
-          <button (click)="editEntity(b, 'b')" class="p-2 text-blue-600 font-medium">Editar</button>
-          <button
-            (click)="toggleBarberoActivo(b)"
-            [class.text-orange-600]="b.activo"
-            [class.text-green-600]="!b.activo"
-            class="p-2 font-medium"
-          >
-            {{ b.activo ? 'Dar de Baja' : 'Reactivar' }}
-          </button>
-          <button
-            (click)="eliminarBarberoFisico(b.id)"
-            class="p-2 text-red-600 font-medium"
-            title="Borrar físicamente"
-          >
-            🗑️
-          </button>
+      <div class="d-flex flex-column gap-3">
+        <div *ngFor="let b of barberos()" class="bf-entity-row">
+          <div>
+            <p class="bf-entity-nombre mb-0" [class.bf-entity-nombre--inactivo]="!b.activo">
+              {{ b.nombre }}
+              <span *ngIf="!b.activo" class="bf-badge-baja ms-2">De baja</span>
+            </p>
+            <small class="bf-list-meta">{{ b.especialidad }}</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button (click)="editEntity(b, 'b')" class="btn-bf-link">Editar</button>
+            <button
+              (click)="toggleBarberoActivo(b)"
+              [class.bf-link-warning]="b.activo"
+              [class.bf-link-success]="!b.activo"
+              class="btn-bf-link"
+            >
+              {{ b.activo ? 'Dar de baja' : 'Reactivar' }}
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section *ngIf="view === 'servicios'" class="fade-in">
-    <div class="card mb-6 p-4 bg-white shadow rounded">
-      <h2 class="font-semibold mb-4 text-gray-800">
-        {{ editingId ? 'Editar' : 'Nuevo' }} Servicio
-      </h2>
+    <!-- SERVICIOS -->
+    <section *ngIf="view === 'servicios'" class="admin-section-fade">
+      <div class="bf-card mb-4">
+        <h2 class="bf-card-title mb-4">{{ editingId ? 'Editar' : 'Nuevo' }} Servicio</h2>
+        <form
+          [formGroup]="servicioForm"
+          (ngSubmit)="onSaveServicio()"
+          class="d-flex flex-column gap-3"
+        >
+          <input formControlName="nombre" placeholder="Nombre del servicio" class="form-control" />
+          <div class="row g-2">
+            <div class="col-6">
+              <input
+                type="number"
+                formControlName="precio"
+                placeholder="Precio €"
+                class="form-control"
+              />
+            </div>
+            <div class="col-6">
+              <input
+                type="number"
+                formControlName="duracion"
+                placeholder="Minutos"
+                class="form-control"
+              />
+            </div>
+          </div>
+          <div class="d-flex gap-3">
+            <button
+              type="submit"
+              [disabled]="servicioForm.invalid || isLoading()"
+              class="btn-bf-primary"
+            >
+              {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Guardar' }}
+            </button>
+            <button *ngIf="editingId" (click)="resetForms()" type="button" class="btn-bf-secondary">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
 
-      <form [formGroup]="servicioForm" (ngSubmit)="onSaveServicio()" class="space-y-4">
-        <div>
-          <input
-            formControlName="nombre"
-            placeholder="Nombre del servicio"
-            class="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div class="flex gap-2">
-          <input
-            type="number"
-            formControlName="precio"
-            placeholder="Precio €"
-            class="w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="number"
-            formControlName="duracion"
-            placeholder="Mins"
-            class="w-1/2 p-2 border rounded focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <div class="flex gap-2 pt-2">
-          <button
-            type="submit"
-            [disabled]="servicioForm.invalid || isLoading()"
-            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400 transition font-medium flex-1"
-          >
-            <span *ngIf="isLoading()" class="mr-2">⏳</span>
-            {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Guardar Servicio' }}
-          </button>
-          <button
-            *ngIf="editingId"
-            (click)="resetForms()"
-            type="button"
-            class="px-4 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 border border-gray-300"
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
-    </div>
-
-    <div class="space-y-3">
-      <div
-        *ngFor="let s of servicios()"
-        class="flex justify-between items-center p-4 border rounded bg-white shadow-sm hover:shadow transition"
-      >
-        <div>
-          <p class="font-bold text-gray-900">{{ s.nombre }}</p>
-          <span class="text-sm text-gray-500">{{ s.duracion }} min - {{ s.precio }}€</span>
-        </div>
-        <div class="flex gap-2">
-          <button
-            (click)="editEntity(s, 's')"
-            class="p-2 text-blue-600 font-medium hover:bg-blue-50 rounded transition"
-            title="Editar servicio"
-          >
-            Editar
-          </button>
-
-          <button
-            (click)="eliminarServicio(s.id)"
-            class="p-2 text-red-600 font-medium hover:bg-red-50 rounded transition"
-            title="Eliminar servicio permanentemente"
-          >
-            🗑️ Borrar
-          </button>
+      <div class="d-flex flex-column gap-3">
+        <div *ngFor="let s of servicios()" class="bf-entity-row">
+          <div>
+            <p class="bf-entity-nombre mb-0">{{ s.nombre }}</p>
+            <small class="bf-list-meta">{{ s.duracion }} min — {{ s.precio }}€</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button (click)="editEntity(s, 's')" class="btn-bf-link">Editar</button>
+            <button (click)="eliminarServicio(s.id)" class="btn-bf-link bf-link-danger">
+              Borrar
+            </button>
+          </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section *ngIf="view === 'citas'" class="fade-in">
-    <div class="card mb-6 p-4 bg-white shadow rounded">
-      <div class="flex space-x-2 border-b border-gray-200 mb-4">
+    <!-- CITAS -->
+    <section *ngIf="view === 'citas'" class="admin-section-fade">
+      <div class="bf-subtabs mb-3">
         <button
           (click)="subViewCitas = 'activas'"
-          [class.border-blue-600]="subViewCitas === 'activas'"
-          [class.text-blue-600]="subViewCitas === 'activas'"
-          class="pb-2 px-4 border-b-2 font-medium transition-colors border-transparent text-gray-500 hover:text-gray-900"
+          [class.bf-subtab--active]="subViewCitas === 'activas'"
+          class="bf-subtab"
         >
           Pendientes y Confirmadas
         </button>
         <button
           (click)="subViewCitas = 'historial'"
-          [class.border-blue-600]="subViewCitas === 'historial'"
-          [class.text-blue-600]="subViewCitas === 'historial'"
-          class="pb-2 px-4 border-b-2 font-medium transition-colors border-transparent text-gray-500 hover:text-gray-900"
+          [class.bf-subtab--active]="subViewCitas === 'historial'"
+          class="bf-subtab"
         >
           Historial
         </button>
@@ -401,86 +333,74 @@
 
       <div
         *ngIf="(subViewCitas === 'activas' ? citasActivas() : citasHistorial()).length === 0"
-        class="text-center text-gray-500 py-4"
+        class="bf-empty"
       >
-        No hay citas en esta sección.
+        <p>No hay citas en esta sección</p>
       </div>
 
-      <div class="space-y-3">
+      <div class="d-flex flex-column gap-3">
         <div
           *ngFor="let cita of subViewCitas === 'activas' ? citasActivas() : citasHistorial()"
-          class="p-4 border rounded shadow-sm flex flex-col md:flex-row justify-between md:items-center"
-          [ngClass]="{ 'border-l-4 border-l-yellow-400 bg-yellow-50': cita.estado === 'pendiente' }"
+          class="bf-cita-card-admin"
+          [class.bf-cita-card-admin--pendiente]="cita.estado === 'pendiente'"
         >
-          <div class="mb-3 md:mb-0">
-            <div class="flex items-center gap-2 mb-1">
-              <span class="font-bold text-lg">{{
-                cita.fecha_hora | date: 'dd/MM/yyyy HH:mm'
-              }}</span>
-              <span
-                class="px-2 py-1 text-xs rounded-full font-bold uppercase"
-                [ngClass]="{
-                  'bg-yellow-200 text-yellow-800': cita.estado === 'pendiente',
-                  'bg-blue-200 text-blue-800': cita.estado === 'confirmada',
-                  'bg-green-200 text-green-800': cita.estado === 'completada',
-                  'bg-red-200 text-red-800': cita.estado === 'cancelada',
-                }"
-              >
-                {{ cita.estado }}
-              </span>
-            </div>
-            <p class="text-gray-700">
-              <strong>Cliente:</strong> {{ cita.cliente_nombre || 'Usuario ' + cita.usuarios_id }}
-            </p>
-            <p class="text-sm text-gray-500">
-              Barbero: {{ cita.barbero_nombre }} | Servicio: {{ cita.servicio_nombre }}
-            </p>
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <span class="bf-list-hora">{{ cita.fecha_hora | date: 'dd/MM/yyyy HH:mm' }}</span>
+            <span
+              class="chip"
+              [class.chip-pendiente]="cita.estado === 'pendiente'"
+              [class.chip-confirmada]="cita.estado === 'confirmada'"
+              [class.chip-completada]="cita.estado === 'completada'"
+              [class.chip-cancelada]="cita.estado === 'cancelada'"
+              >{{ cita.estado }}</span
+            >
           </div>
+          <p class="bf-list-nombre mb-1">
+            <strong>Cliente:</strong> {{ cita.cliente_nombre || 'Usuario ' + cita.usuarios_id }}
+          </p>
+          <p class="bf-list-meta mb-3">{{ cita.barbero_nombre }} — {{ cita.servicio_nombre }}</p>
 
-          <div *ngIf="subViewCitas === 'activas'" class="flex gap-2">
+          <div *ngIf="subViewCitas === 'activas'" class="d-flex gap-2 flex-wrap">
             <button
               *ngIf="cita.estado === 'pendiente'"
               (click)="cambiarEstadoCita(cita.id, 'confirmada')"
-              class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 font-medium transition text-sm"
+              class="btn-action-confirm btn-bf-sm"
             >
               Confirmar
             </button>
             <button
               *ngIf="cita.estado === 'pendiente'"
               (click)="cambiarEstadoCita(cita.id, 'cancelada')"
-              class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium transition text-sm"
+              class="btn-action-cancel btn-bf-sm"
             >
               Rechazar
             </button>
             <button
               *ngIf="cita.estado === 'confirmada'"
               (click)="cambiarEstadoCita(cita.id, 'completada')"
-              class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition text-sm"
+              class="btn-action-complete btn-bf-sm"
             >
-              Marcar Completada
+              Completada
             </button>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <section *ngIf="view === 'walkins'" class="fade-in">
-    <div class="card mb-6 p-4 bg-white shadow rounded">
-      <div class="flex space-x-2 border-b border-gray-200 mb-4">
+    <!-- WALK-INS -->
+    <section *ngIf="view === 'walkins'" class="admin-section-fade">
+      <div class="bf-subtabs mb-3">
         <button
           (click)="subViewWalkins = 'cola'"
-          [class.border-blue-600]="subViewWalkins === 'cola'"
-          [class.text-blue-600]="subViewWalkins === 'cola'"
-          class="pb-2 px-4 border-b-2 font-medium transition-colors border-transparent text-gray-500 hover:text-gray-900"
+          [class.bf-subtab--active]="subViewWalkins === 'cola'"
+          class="bf-subtab"
         >
-          En Cola (Activos)
+          En Cola
         </button>
         <button
           (click)="subViewWalkins = 'historial'"
-          [class.border-blue-600]="subViewWalkins === 'historial'"
-          [class.text-blue-600]="subViewWalkins === 'historial'"
-          class="pb-2 px-4 border-b-2 font-medium transition-colors border-transparent text-gray-500 hover:text-gray-900"
+          [class.bf-subtab--active]="subViewWalkins === 'historial'"
+          class="bf-subtab"
         >
           Historial
         </button>
@@ -488,66 +408,58 @@
 
       <div
         *ngIf="(subViewWalkins === 'cola' ? walkinsEnCola() : walkinsHistorial()).length === 0"
-        class="text-center text-gray-500 py-8"
+        class="bf-empty"
       >
-        No hay nadie en esta lista en este momento.
+        <p>No hay nadie en esta lista</p>
       </div>
 
-      <div class="space-y-3">
+      <div class="d-flex flex-column gap-3">
         <div
           *ngFor="let w of subViewWalkins === 'cola' ? walkinsEnCola() : walkinsHistorial()"
-          class="p-4 border rounded shadow-sm flex flex-col md:flex-row justify-between md:items-center"
-          [ngClass]="{
-            'border-l-4 border-l-purple-500 bg-purple-50': w.estado === 'esperando',
-            'border-l-4 border-l-orange-400 bg-orange-50': w.estado === 'atendiendo',
-          }"
+          class="bf-walkin-card"
+          [class.bf-walkin-card--esperando]="w.estado === 'esperando'"
+          [class.bf-walkin-card--atendiendo]="w.estado === 'atendiendo'"
         >
-          <div>
-            <div class="flex items-center gap-2 mb-1">
-              <span class="font-bold text-lg text-gray-900">{{ w.nombre }}</span>
-              <span
-                class="px-2 py-1 text-xs rounded-full font-bold uppercase"
-                [ngClass]="{
-                  'bg-purple-200 text-purple-800': w.estado === 'esperando',
-                  'bg-orange-200 text-orange-800': w.estado === 'atendiendo',
-                  'bg-green-200 text-green-800': w.estado === 'completado',
-                  'bg-red-200 text-red-800': w.estado === 'cancelado',
-                }"
-              >
-                {{ w.estado }}
-              </span>
-            </div>
-            <p class="text-sm text-gray-500">
-              Barbero preferido: {{ w.barbero_nombre || 'Cualquiera' }}
-            </p>
-            <p class="text-xs text-gray-400">Llegada: {{ w.fecha_llegada | date: 'HH:mm' }}h</p>
+          <div class="bf-walkin-info">
+            <strong class="bf-walkin-nombre">{{ w.nombre }}</strong>
+            <small class="bf-walkin-hora"
+              >Llegada: {{ w.hora_llegada || w.fecha_llegada | date: 'HH:mm' }}h</small
+            >
+            <small class="bf-list-meta">Barbero: {{ w.barbero_nombre || 'Cualquiera' }}</small>
+            <span
+              class="chip mt-1"
+              [class.chip-esperando]="w.estado === 'esperando'"
+              [class.chip-atendiendo]="w.estado === 'atendiendo'"
+              [class.chip-completado]="w.estado === 'completado'"
+              [class.chip-cancelado]="w.estado === 'cancelado'"
+              >{{ w.estado }}</span
+            >
           </div>
-
-          <div *ngIf="subViewWalkins === 'cola'" class="flex gap-2 mt-3 md:mt-0">
+          <div *ngIf="subViewWalkins === 'cola'" class="bf-walkin-actions">
             <button
               *ngIf="w.estado === 'esperando'"
               (click)="cambiarEstadoWalkin(w.id, 'atendiendo')"
-              class="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 font-medium transition text-sm"
+              class="btn-action-atender btn-bf-sm"
             >
-              Empezar a Atender
+              Atender
             </button>
             <button
               *ngIf="w.estado === 'atendiendo'"
               (click)="cambiarEstadoWalkin(w.id, 'completado')"
-              class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 font-medium transition text-sm"
+              class="btn-action-complete btn-bf-sm"
             >
-              Finalizar Corte
+              Finalizar
             </button>
             <button
               *ngIf="w.estado === 'esperando'"
               (click)="cambiarEstadoWalkin(w.id, 'cancelado')"
-              class="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 font-medium transition text-sm"
+              class="btn-action-cancel btn-bf-sm"
             >
               Se marchó
             </button>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  </div>
 </div>

@@ -1,42 +1,16 @@
-.page-header {
-  display: flex;
-  justify-content: space-between; /* Separa el título a la izquierda y el botón a la derecha */
-  align-items: center; /* Para centrar verticalmente */
-  margin-bottom: 1.5rem;
+.chip-pendiente {
+  background: var(--bf-warning-bg);
+  color: var(--bf-warning);
 }
-
-.page-header h1 {
-  margin: 0;
-  font-size: 1.5rem;
+.chip-confirmada {
+  background: var(--bf-info-bg);
+  color: var(--bf-info);
 }
-
-.btn-sm {
-  padding: 8px 16px;
-  font-size: 0.9rem;
-  border-radius: 8px;
-  white-space: nowrap; /* Evita que el texto del botón se parta en dos líneas en móviles pequeños */
+.chip-completada {
+  background: var(--bf-success-bg);
+  color: var(--bf-success);
 }
-
-.status-chip {
-  padding: 4px 12px;
-  border-radius: 16px;
-  font-size: 0.8rem;
-  font-weight: bold;
+.chip-cancelada {
+  background: var(--bf-error-bg);
+  color: var(--bf-error);
 }
-
-.chip-warning {
-  background-color: #fff3cd;
-  color: #856404;
-} /* Pendiente*/
-.chip-info {
-  background-color: #d1ecf1;
-  color: #0c5460;
-} /* Confirmada*/
-.chip-success {
-  background-color: #d4edda;
-  color: #155724;
-} /* Completada*/
-.chip-danger {
-  background-color: #f8d7da;
-  color: #721c24;
-} /* Cancelada*/

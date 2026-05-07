@@ -1,23 +1,18 @@
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.35rem 0.75rem;
-  border-radius: 9999px; /* Aspecto de píldora */
-  font-size: 0.875rem;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
-
-  /* Animación suave si el estado cambia dinámicamente en el panel en vivo */
   transition: all 0.2s ease-in-out;
-
-  .badge-icon {
-    font-size: 1rem;
-  }
+  /* Animación suave si el estado cambia en el panel en vivo */
+  transition: all 0.2s ease-in-out;
 }
 
-/* Paleta de colores semántica */
+/* Paleta de colores */
 .badge-warning {
   background-color: #fffbeb;
   color: #b45309;

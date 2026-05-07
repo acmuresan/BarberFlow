@@ -1,48 +1,60 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { timer, Subscription, switchMap, catchError, of } from 'rxjs';
-import { PanelPublicoService, PanelPublicoData } from '../../core/services/panel-publico.service';
+import { RouterModule } from '@angular/router';
+import { PanelPublicoService } from '../../core/services/panel-publico.service';
+import { FeedbackService } from '../../core/services/feedback.service';
 
 @Component({
   selector: 'app-panel-publico',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './panel-publico.component.html',
   styleUrls: ['./panel-publico.component.css'],
 })
 export class PanelPublicoComponent implements OnInit, OnDestroy {
-  private panelService = inject(PanelPublicoService);
-  private pollingSub?: Subscription;
+  private panelPublicoService = inject(PanelPublicoService);
+  private feedback = inject(FeedbackService);
 
-  datos: PanelPublicoData | null = null;
+  private readonly POLLING_INTERVAL = 30000;
+  private intervalId: any;
+
+  datos: PanelPublicoService | null = null;
   loading = true;
   error = false;
 
+  lastUpdate = signal<Date>(new Date());
+
+  tiempoRedondeado = computed(() => {
+    const val = this.datos?.tiempo_espera_estimado_min;
+    if (val === null || val === undefined) return null;
+    return Math.round(val);
+  });
+
   ngOnInit(): void {
-    // Inicia en el ms 0 y luego emite cada 30 segundos
-    this.pollingSub = timer(0, 30000)
-      .pipe(
-        switchMap(() =>
-          this.panelService.getDatosPanel().pipe(
-            catchError((err) => {
-              console.error('Error al conectar con la API pública', err);
-              this.error = true;
-              return of(null); // Evita que el timer muera si hay un error
-            }),
-          ),
-        ),
-      )
-      .subscribe((respuesta) => {
-        if (respuesta) {
-          this.datos = respuesta;
-          this.error = false;
-        }
-        this.loading = false;
-      });
+    // Pide peticion cada 30 segundos
+    this.fetchData();
+    this.intervalId = setInterval(() => this.fetchData(), this.POLLING_INTERVAL);
   }
 
   ngOnDestroy(): void {
-    //Se destruye la suscripcion para evitar memory leaks cuando el usuario cambie de rutas
-    this.pollingSub?.unsubscribe();
+    if (this.intervalId) clearInterval(this.intervalId);
+  }
+
+  private fetchData(): void {
+    this.panelPublicoService.getDatosPanel().subscribe({
+      next: (datos) => {
+        this.datos = datos;
+        this.lastUpdate.set(new Date());
+        this.error = false;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = true;
+        if (this.loading) {
+          this.feedback.showToast('No se pudo conectar con la barbería', 'error');
+        }
+        this.loading = false;
+      },
+    });
   }
 }

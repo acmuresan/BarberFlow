@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { FormBuilder, Validators, ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
@@ -14,21 +14,19 @@ import { finalize } from 'rxjs/operators';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
-export class LoginComponent implements OnInit {
-  loginForm!: FormGroup;
+export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private feedback = inject(FeedbackService);
   private router = inject(Router);
-  errorMessage: string = '';
-  isLoading = signal<boolean>(false);
 
-  ngOnInit(): void {
-    this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', Validators.required],
-    });
-  }
+  loginForm = this.fb.group({
+    email: ['', [Validators.required, Validators.email]],
+    password: ['', Validators.required],
+  });
+
+  errorMessage = '';
+  isLoading = signal<boolean>(false);
 
   onSubmit(): void {
     if (this.loginForm.invalid) return;
@@ -38,25 +36,23 @@ export class LoginComponent implements OnInit {
 
     this.authService
       .login(this.loginForm.value)
-      .pipe(
-        // finalize apaga el loader sin importar si da 200 o 401
-        finalize(() => this.isLoading.set(false)),
-      )
+      .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: () => {
           this.feedback.showToast('¡Bienvenido a BarberFlow!', 'success');
           const user = this.authService.currentUser();
-          this.redirigirSegunRol(user?.rol || null);
+          this.redirigirSegunRol(user?.rol ?? null);
         },
         error: (err) => {
           if (err.status === 401) {
-            this.errorMessage = 'Credenciales incorrectas. Revisa tu email y contraseña.';
+            this.errorMessage = 'Email o contraseña incorrectos';
           } else {
-            this.errorMessage = 'Error de conexión con el servidor.';
+            this.errorMessage = 'Error de conexión con el servidor';
           }
         },
       });
   }
+
   private redirigirSegunRol(rol: string | null): void {
     switch (rol) {
       case 'admin':
@@ -67,7 +63,7 @@ export class LoginComponent implements OnInit {
         break;
       case 'cliente':
       default:
-        this.router.navigate(['/mis-citas']); // O al wizard de reservas
+        this.router.navigate(['/mis-citas']);
         break;
     }
   }

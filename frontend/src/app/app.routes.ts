@@ -18,6 +18,14 @@ export const routes: Routes = [
       import('./pages/panel-publico/panel-publico.component').then((m) => m.PanelPublicoComponent),
   },
 
+  // Ruta raíz, redirige al panel público sin necesidad de login
+  { path: '', redirectTo: '/panel-publico', pathMatch: 'full' },
+
+  { path: 'login', component: LoginComponent },
+
+  { path: 'register', component: RegisterComponent },
+
+  //Rutas privadas (necesitan el JWT)
   {
     path: 'panel-admin',
     component: PanelAdminComponent,
@@ -37,10 +45,6 @@ export const routes: Routes = [
     data: { expectedRoles: ['admin', 'barbero'] },
   },
 
-  { path: '', redirectTo: '/panel-vivo', pathMatch: 'full' },
-
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
   {
     path: 'mis-citas',
     component: MisCitasComponent,

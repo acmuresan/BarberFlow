@@ -1,1 +1,14 @@
-<p>toast works!</p>
+<div class="toast-container" *ngIf="feedback.toast() as t">
+  <div
+    class="toast"
+    [class.toast--success]="t.type === 'success'"
+    [class.toast--error]="t.type === 'error'"
+    role="alert"
+    aria-live="assertive"
+  >
+    <span class="toast__icon" aria-hidden="true">
+      {{ t.type === 'success' ? '✓' : 'X' }}
+    </span>
+    <span class="toast__message">{{ t.message }}</span>
+  </div>
+</div>
