@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1:3306
--- Generation Time: Apr 26, 2026 at 07:41 PM
+-- Generation Time: May 07, 2026 at 04:24 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.30
 
@@ -41,9 +41,11 @@ CREATE TABLE `barberos` (
 --
 
 INSERT INTO `barberos` (`id`, `nombre`, `especialidad`, `activo`, `created_at`, `usuario_id`) VALUES
-(1, 'Carlos', 'Corte clásico', 1, '2026-04-12 08:29:53', 1),
-(2, 'Javi', 'Barba y perfilado', 0, '2026-04-12 08:29:53', NULL),
-(3, 'Pepe', 'Afeitado', 1, '2026-04-26 21:09:19', NULL);
+(1, 'Pepe 2', 'Corte de pelo ', 1, '2026-04-27 16:39:45', 5),
+(2, 'Juan', 'Afeitado', 0, '2026-04-27 17:09:21', 8),
+(3, 'Ana ', 'Tinte', 1, '2026-04-27 17:19:37', 9),
+(4, 'Barbero Prueba 2', 'Corte infantil ', 1, '2026-05-04 15:33:25', 11),
+(5, 'BarberoPrueba', 'Tintes', 1, '2026-05-06 16:37:38', 14);
 
 -- --------------------------------------------------------
 
@@ -67,15 +69,21 @@ CREATE TABLE `citas` (
 --
 
 INSERT INTO `citas` (`id`, `fecha_hora`, `fecha_hora_fin`, `estado`, `usuarios_id`, `barberos_id`, `servicios_id`, `created_at`) VALUES
-(1, '2026-04-20 10:00:00', '2026-04-20 10:30:00', 'pendiente', 1, 1, 1, '2026-04-12 08:30:11'),
-(2, '2026-04-20 11:00:00', '2026-04-20 11:30:00', 'pendiente', 1, 1, 1, '2026-04-15 20:11:26'),
-(3, '2026-04-20 10:30:00', '2026-04-20 11:00:00', 'pendiente', 1, 1, 1, '2026-04-15 20:15:02'),
-(4, '2026-04-20 11:00:00', '2026-04-20 11:30:00', 'pendiente', 1, 2, 1, '2026-04-15 20:16:24'),
-(5, '2026-04-20 11:30:00', '2026-04-20 12:00:00', 'pendiente', 1, 2, 1, '2026-04-15 20:16:39'),
-(6, '2026-04-15 20:40:00', '2026-04-15 21:10:00', 'pendiente', 1, 1, 1, '2026-04-15 20:36:39'),
-(7, '2026-04-15 21:00:00', '2026-04-15 21:30:00', 'pendiente', 1, 1, 1, '2026-04-15 20:48:07'),
-(8, '2026-04-28 17:00:00', '2026-04-28 17:30:00', 'cancelada', 2, 1, 1, '2026-04-23 21:38:29'),
-(9, '2026-10-22 11:30:00', '2026-10-22 12:00:00', 'cancelada', 2, 1, 1, '2026-04-26 20:53:50');
+(1, '2026-04-27 17:00:00', '2026-04-27 17:30:00', 'completada', 6, 1, 1, '2026-04-27 16:48:09'),
+(2, '2026-04-28 12:00:00', '2026-04-28 12:30:00', 'confirmada', 7, 1, 1, '2026-04-27 17:00:27'),
+(3, '2026-04-29 12:00:00', '2026-04-29 12:30:00', 'confirmada', 7, 1, 1, '2026-04-27 17:02:16'),
+(4, '2026-04-30 11:00:00', '2026-04-30 11:30:00', 'confirmada', 7, 1, 1, '2026-04-27 17:08:53'),
+(5, '2026-04-30 17:00:00', '2026-04-30 17:30:00', 'completada', 7, 1, 1, '2026-04-27 17:12:59'),
+(6, '2026-04-30 12:00:00', '2026-04-30 12:30:00', 'confirmada', 7, 1, 1, '2026-04-27 17:14:14'),
+(7, '2026-04-30 12:00:00', '2026-04-30 13:05:00', 'cancelada', 10, 2, 1, '2026-04-29 20:01:32'),
+(8, '2026-04-30 12:00:00', '2026-04-30 13:05:00', 'confirmada', 10, 2, 1, '2026-04-29 21:07:48'),
+(9, '2026-05-27 12:00:00', '2026-05-27 13:05:00', 'confirmada', 10, 3, 1, '2026-05-03 17:56:37'),
+(10, '2026-05-29 12:00:00', '2026-05-29 13:05:00', 'confirmada', 7, 3, 1, '2026-05-03 17:57:54'),
+(11, '2026-05-08 17:00:00', '2026-05-08 17:30:00', 'cancelada', 12, 4, 3, '2026-05-04 15:41:56'),
+(12, '2026-05-08 16:00:00', '2026-05-08 16:30:00', 'pendiente', 12, 4, 3, '2026-05-04 15:50:52'),
+(13, '2026-05-04 17:00:00', '2026-05-04 18:05:00', 'confirmada', 13, 4, 1, '2026-05-04 16:07:27'),
+(14, '2026-05-05 16:00:00', '2026-05-05 16:30:00', 'cancelada', 13, 4, 3, '2026-05-04 16:07:45'),
+(15, '2026-05-22 19:00:00', '2026-05-22 21:00:00', 'pendiente', 12, 4, 4, '2026-05-06 16:35:14');
 
 -- --------------------------------------------------------
 
@@ -97,9 +105,10 @@ CREATE TABLE `servicios` (
 --
 
 INSERT INTO `servicios` (`id`, `nombre`, `precio`, `duracion`, `created_at`, `activo`) VALUES
-(1, 'Corte de pelo', 15.00, 30, '2026-04-12 08:29:53', 1),
-(2, 'Corte y barba', 25.00, 45, '2026-04-12 08:29:53', 1),
-(3, 'Afeitado', 15.00, 25, '2026-04-12 08:29:53', 1);
+(1, 'Corte de pelo ', 20.00, 65, '2026-04-27 16:43:46', 1),
+(2, 'Afeitado cabeza', 15.00, 20, '2026-04-29 21:11:46', 1),
+(3, 'Corte Infantil ', 7.00, 30, '2026-05-04 15:34:00', 1),
+(4, 'Tinte', 45.00, 120, '2026-05-04 16:12:31', 1);
 
 -- --------------------------------------------------------
 
@@ -122,13 +131,17 @@ CREATE TABLE `usuarios` (
 --
 
 INSERT INTO `usuarios` (`id`, `nombre`, `email`, `password`, `telefono`, `rol`, `created_at`) VALUES
-(1, 'Alex', 'alex@gmail.com', '$2b$10$efFAO2oqFJuItHjw15wWNeYJLURojtq5IW124K6RhXER1F0dz3SlK', NULL, 'barbero', '2026-03-21 20:37:17'),
-(2, 'Test Cliente', 'cliente@test.com', '$2b$10$DEI/CNzDB.Z/KnU3yBYQNuN4HSmFJ9VttHKGjm.vEXPEfXjqD0noq', NULL, 'cliente', '2026-04-15 19:44:36'),
-(3, 'Admin', 'admin@gmail.com', '$2b$10$efFAO2oqFJuItHjw15wWNeYJLURojtq5IW124K6RhXE...', NULL, 'admin', '2026-04-15 19:58:20'),
 (4, 'Admin', 'admin@barberflow.com', '$2b$10$wk7TJMKuOLQugQKIjvQY1ueU3Dfbiln/jv3tcw/25q4mVWqaVgw5e', NULL, 'admin', '2026-04-15 19:59:35'),
-(5, 'Marta', 'm@gmail.com', '$2b$10$k4S2TvG0Twz7xpS6B.ag4.zEv7VETSqmA5WQp0w/dV/U6SEYr08I.', NULL, 'cliente', '2026-04-18 10:36:34'),
-(6, 'cliente', 'cliente@gmail.com', '$2b$10$8LKcRu7XHPyNl4iO2.u1qOUAOBCnjMWgNa4fqO7jmvdtPHDtpvwKe', NULL, 'cliente', '2026-04-18 10:50:53'),
-(7, 'ASD', 'ASD@test.com', '$2b$10$3vkWeXx4QEXIh4ANiYykJOwCdypTrxt5aIzNkRBkXrC1LVS4BVde6', NULL, 'cliente', '2026-04-26 20:31:21');
+(5, 'Pepe 2', 'pepe2@barberflow.com', '$2b$10$T7OhSgIgZ46vOU9du50y3uh1cjWWOUYc0cqJ2/Rbfqd7XhqHzwTs2', NULL, 'barbero', '2026-04-27 16:39:45'),
+(6, 'cliente 1', 'cliente1@barberflow.com', '$2b$10$IspdGAWrQaJ/s4Wk8cObFO/nZZFcMPDy2HpbhM0O2fotiKblX3AIu', NULL, 'cliente', '2026-04-27 16:47:08'),
+(7, 'Alex', 'alexmuresan1995@gmail.com', '$2b$10$5.iQ2cbWjDGS1IZh9e5LiOYCFVXvYMiGbh3TrOtndnk5iRv5mWKaK', NULL, 'cliente', '2026-04-27 17:00:15'),
+(8, 'Juan', 'juan@barberflow.com', '$2b$10$xlP9lOclC6cS2V3dKK7QKOn1Wo439g.qb6kqRj4ZvFLN22EGGNtP.', NULL, 'barbero', '2026-04-27 17:09:21'),
+(9, 'Ana ', 'ana@barberflow.com', '$2b$10$2W55FucA4BmFrvlmnsGaS.THxTXng9sUD9xDqD1YoCWPUNet2WkIi', NULL, 'barbero', '2026-04-27 17:19:37'),
+(10, 'Pepe', 'pepe@barberflow.com', '$2b$10$CYVW83d0W.B4zczUC/9dXu2LaHelDqK9FpoYJwdzGNGVNAaOwF3Qm', NULL, 'cliente', '2026-04-29 19:51:20'),
+(11, 'Barbero Prueba 2', 'barberoPrueba@gmail.com', '$2a$10$SOv9MXMoEJZY2MLy2uk7/.HY8Nl.mSXEC6adInye85y1x1ZUv10pa', NULL, 'barbero', '2026-05-04 15:33:25'),
+(12, 'Cliente Ngrok', 'clienteNgrok@gmail.com', '$2a$10$rx7LA9XWI5dF0X6qtHDlJO7Q9.0k3KIAMhEiz6QCa.tT75ZeQBzlC', NULL, 'cliente', '2026-05-04 15:41:27'),
+(13, 'Prueba', 'p@gmail.com', '$2a$10$0X7Qs2kT1f95DNKLFwLH8uoFl9nDJVMhdyHU/za.EAyf7LDFCxQOe', NULL, 'cliente', '2026-05-04 16:06:32'),
+(14, 'BarberoPrueba', 'barberoPrueba@barberflow.com', '$2a$10$rF5I93xRWtRgv3vBV6GQxu09cnhIkSlRdhant/UyGDbkdn0hocgHa', NULL, 'barbero', '2026-05-06 16:37:38');
 
 -- --------------------------------------------------------
 
@@ -150,7 +163,14 @@ CREATE TABLE `walkins` (
 --
 
 INSERT INTO `walkins` (`id`, `nombre`, `barberos_id`, `hora_llegada`, `estado`, `created_at`) VALUES
-(1, 'Cliente Test', 1, '2026-04-15 20:33:27', 'atendiendo', '2026-04-15 20:33:27');
+(1, 'A', 4, '2026-05-04 15:35:34', 'completado', '2026-05-04 15:35:34'),
+(2, 'B', 4, '2026-05-04 15:35:36', 'esperando', '2026-05-04 15:35:36'),
+(3, 'C', 4, '2026-05-04 15:35:38', 'cancelado', '2026-05-04 15:35:38'),
+(4, 'Asd', 4, '2026-05-04 16:09:49', 'completado', '2026-05-04 16:09:49'),
+(5, 'A', 5, '2026-05-06 16:37:55', 'esperando', '2026-05-06 16:37:55'),
+(6, 'C', 5, '2026-05-06 16:37:57', 'esperando', '2026-05-06 16:37:57'),
+(7, 'D', 5, '2026-05-06 16:37:58', 'esperando', '2026-05-06 16:37:58'),
+(8, 'F', 5, '2026-05-06 16:38:02', 'esperando', '2026-05-06 16:38:02');
 
 --
 -- Indexes for dumped tables
@@ -200,31 +220,31 @@ ALTER TABLE `walkins`
 -- AUTO_INCREMENT for table `barberos`
 --
 ALTER TABLE `barberos`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `citas`
 --
 ALTER TABLE `citas`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `servicios`
 --
 ALTER TABLE `servicios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `usuarios`
 --
 ALTER TABLE `usuarios`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `walkins`
 --
 ALTER TABLE `walkins`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- Constraints for dumped tables
