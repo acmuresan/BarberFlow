@@ -1,0 +1,465 @@
+<div class="bf-admin" aria-label="Panel de Administración">
+  <!-- HEADER -->
+  <div class="bf-page-header">
+    <h1 class="mb-0">Gestión de Barbería</h1>
+    <div class="d-flex gap-2 align-items-center">
+      <!-- Enlace al panel en vivo -->
+      <a
+        routerLink="/panel-vivo"
+        class="btn-bf-secondary btn-bf-sm"
+        style="text-decoration: none; display: inline-flex; align-items: center; gap: 4px"
+        aria-label="Ver panel en vivo"
+      >
+        Panel en vivo
+      </a>
+      <button (click)="cerrarSesion()" class="btn-bf-danger btn-bf-sm" aria-label="Cerrar sesión">
+        Salir
+      </button>
+    </div>
+  </div>
+
+  <!-- FEEDBACK MESSAGE -->
+  <div class="bf-main">
+    <div
+      *ngIf="uiMessage"
+      aria-live="assertive"
+      role="alert"
+      class="mb-4"
+      [class.alert-bf-success]="uiMessage.type === 'success'"
+      [class.alert-bf-error]="uiMessage.type === 'error'"
+    >
+      {{ uiMessage.text }}
+    </div>
+
+    <!-- NAV TABS -->
+    <div class="bf-tabs mb-4" role="tablist" aria-label="Secciones del panel admin">
+      <button
+        (click)="cambiarVista('dashboard')"
+        [class.active]="view === 'dashboard'"
+        class="bf-tab"
+        role="tab"
+      >
+        Panel
+      </button>
+      <button
+        (click)="cambiarVista('barberos')"
+        [class.active]="view === 'barberos'"
+        class="bf-tab"
+        role="tab"
+      >
+        Barberos
+      </button>
+      <button
+        (click)="cambiarVista('servicios')"
+        [class.active]="view === 'servicios'"
+        class="bf-tab"
+        role="tab"
+      >
+        Servicios
+      </button>
+      <button
+        (click)="cambiarVista('citas')"
+        [class.active]="view === 'citas'"
+        class="bf-tab"
+        role="tab"
+      >
+        Citas
+      </button>
+      <button
+        (click)="cambiarVista('walkins')"
+        [class.active]="view === 'walkins'"
+        class="bf-tab"
+        role="tab"
+      >
+        Walk-ins
+      </button>
+    </div>
+
+    <!-- DASHBOARD -->
+    <section *ngIf="view === 'dashboard'" class="admin-section-fade">
+      <!-- Stats cards -->
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-4">
+          <div class="bf-stat-card bf-stat-card--blue">
+            <div>
+              <p class="bf-stat-label">Citas Hoy</p>
+              <p class="bf-stat-num">{{ stats().citasPendientesHoy }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="bf-stat-card bf-stat-card--purple">
+            <div>
+              <p class="bf-stat-label">Esperando</p>
+              <p class="bf-stat-num">{{ stats().esperando }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-4">
+          <div class="bf-stat-card bf-stat-card--orange">
+            <div>
+              <p class="bf-stat-label">Atendiendo</p>
+              <p class="bf-stat-num">{{ stats().atendiendo }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Agenda + Walk-ins en vivo -->
+      <div class="row g-4">
+        <!-- Agenda hoy -->
+        <div class="col-12 col-lg-6">
+          <div class="bf-card h-100">
+            <h3 class="bf-card-title mb-4">Agenda de Hoy</h3>
+            <div *ngIf="citasHoy().length === 0" class="bf-empty">
+              <p>No hay citas para hoy</p>
+            </div>
+            <div class="admin-scroll-list">
+              <div
+                *ngFor="let cita of citasHoy()"
+                class="bf-list-item"
+                [class.bf-list-item--confirmada]="cita.estado === 'confirmada'"
+                [class.bf-list-item--completada]="cita.estado === 'completada'"
+              >
+                <div>
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="bf-list-hora">{{ cita.fecha_hora | date: 'HH:mm' }}h</span>
+                    <span
+                      class="chip"
+                      [class.chip-pendiente]="cita.estado === 'pendiente'"
+                      [class.chip-confirmada]="cita.estado === 'confirmada'"
+                      [class.chip-completada]="cita.estado === 'completada'"
+                      >{{ cita.estado }}</span
+                    >
+                  </div>
+                  <p class="bf-list-nombre mb-0">
+                    {{ cita.cliente_nombre || 'Usuario ' + cita.usuarios_id }}
+                  </p>
+                  <small class="bf-list-meta"
+                    >{{ cita.barbero_nombre }} — {{ cita.servicio_nombre }}</small
+                  >
+                </div>
+                <button (click)="view = 'citas'" class="btn-bf-link">Gestionar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Walk-ins en vivo -->
+        <div class="col-12 col-lg-6">
+          <div class="bf-card h-100">
+            <div class="mb-4">
+              <h3 class="bf-card-title mb-0">Walk-ins en local</h3>
+            </div>
+            <div *ngIf="walkinsEnCola().length === 0" class="bf-empty">
+              <p>El salón está vacío</p>
+            </div>
+            <div class="admin-scroll-list">
+              <div
+                *ngFor="let w of walkinsEnCola()"
+                class="bf-list-item"
+                [class.bf-list-item--esperando]="w.estado === 'esperando'"
+                [class.bf-list-item--atendiendo]="w.estado === 'atendiendo'"
+              >
+                <div>
+                  <p class="bf-list-nombre mb-1">{{ w.nombre }}</p>
+                  <small class="bf-walkin-hora"
+                    >Llegada: {{ w.hora_llegada || w.fecha_llegada | date: 'HH:mm' }}h</small
+                  >
+                  <br />
+                  <span
+                    class="chip mt-1"
+                    [class.chip-esperando]="w.estado === 'esperando'"
+                    [class.chip-atendiendo]="w.estado === 'atendiendo'"
+                    >{{ w.estado }}</span
+                  >
+                </div>
+                <button (click)="view = 'walkins'" class="btn-bf-link">Gestionar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!--BARBEROS -->
+    <section *ngIf="view === 'barberos'" class="admin-section-fade">
+      <div class="bf-card mb-4">
+        <h2 class="bf-card-title mb-4">{{ editingId ? 'Editar' : 'Nuevo' }} Barbero</h2>
+        <form
+          [formGroup]="barberoForm"
+          (ngSubmit)="onSaveBarbero()"
+          class="d-flex flex-column gap-3"
+        >
+          <input formControlName="nombre" placeholder="Nombre completo" class="form-control" />
+          <input
+            formControlName="especialidad"
+            placeholder="Ej: Degradados, Barba"
+            class="form-control"
+          />
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Email de acceso"
+            class="form-control"
+          />
+          <div>
+            <input
+              type="password"
+              formControlName="password"
+              [placeholder]="editingId ? 'Nueva contraseña (opcional)' : 'Contraseña de acceso'"
+              class="form-control"
+            />
+            <small *ngIf="editingId" style="color: var(--bf-muted); font-size: 12px"
+              >Deja en blanco para mantener la actual</small
+            >
+          </div>
+          <div class="d-flex gap-3">
+            <button
+              type="submit"
+              [disabled]="barberoForm.invalid || isLoading()"
+              class="btn-bf-primary"
+            >
+              {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Crear Barbero' }}
+            </button>
+            <button *ngIf="editingId" (click)="resetForms()" type="button" class="btn-bf-secondary">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="d-flex flex-column gap-3">
+        <div *ngFor="let b of barberos()" class="bf-entity-row">
+          <div>
+            <p class="bf-entity-nombre mb-0" [class.bf-entity-nombre--inactivo]="!b.activo">
+              {{ b.nombre }}
+              <span *ngIf="!b.activo" class="bf-badge-baja ms-2">De baja</span>
+            </p>
+            <small class="bf-list-meta">{{ b.especialidad }}</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button (click)="editEntity(b, 'b')" class="btn-bf-link">Editar</button>
+            <button
+              (click)="toggleBarberoActivo(b)"
+              [class.bf-link-warning]="b.activo"
+              [class.bf-link-success]="!b.activo"
+              class="btn-bf-link"
+            >
+              {{ b.activo ? 'Dar de baja' : 'Reactivar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SERVICIOS -->
+    <section *ngIf="view === 'servicios'" class="admin-section-fade">
+      <div class="bf-card mb-4">
+        <h2 class="bf-card-title mb-4">{{ editingId ? 'Editar' : 'Nuevo' }} Servicio</h2>
+        <form
+          [formGroup]="servicioForm"
+          (ngSubmit)="onSaveServicio()"
+          class="d-flex flex-column gap-3"
+        >
+          <input formControlName="nombre" placeholder="Nombre del servicio" class="form-control" />
+          <div class="row g-2">
+            <div class="col-6">
+              <input
+                type="number"
+                formControlName="precio"
+                placeholder="Precio €"
+                class="form-control"
+              />
+            </div>
+            <div class="col-6">
+              <input
+                type="number"
+                formControlName="duracion"
+                placeholder="Minutos"
+                class="form-control"
+              />
+            </div>
+          </div>
+          <div class="d-flex gap-3">
+            <button
+              type="submit"
+              [disabled]="servicioForm.invalid || isLoading()"
+              class="btn-bf-primary"
+            >
+              {{ isLoading() ? 'Guardando...' : editingId ? 'Actualizar' : 'Guardar' }}
+            </button>
+            <button *ngIf="editingId" (click)="resetForms()" type="button" class="btn-bf-secondary">
+              Cancelar
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <div class="d-flex flex-column gap-3">
+        <div *ngFor="let s of servicios()" class="bf-entity-row">
+          <div>
+            <p class="bf-entity-nombre mb-0">{{ s.nombre }}</p>
+            <small class="bf-list-meta">{{ s.duracion }} min — {{ s.precio }}€</small>
+          </div>
+          <div class="d-flex gap-2">
+            <button (click)="editEntity(s, 's')" class="btn-bf-link">Editar</button>
+            <button (click)="eliminarServicio(s.id)" class="btn-bf-link bf-link-danger">
+              Borrar
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CITAS -->
+    <section *ngIf="view === 'citas'" class="admin-section-fade">
+      <div class="bf-subtabs mb-3">
+        <button
+          (click)="subViewCitas = 'activas'"
+          [class.bf-subtab--active]="subViewCitas === 'activas'"
+          class="bf-subtab"
+        >
+          Pendientes y Confirmadas
+        </button>
+        <button
+          (click)="subViewCitas = 'historial'"
+          [class.bf-subtab--active]="subViewCitas === 'historial'"
+          class="bf-subtab"
+        >
+          Historial
+        </button>
+      </div>
+
+      <div
+        *ngIf="(subViewCitas === 'activas' ? citasActivas() : citasHistorial()).length === 0"
+        class="bf-empty"
+      >
+        <p>No hay citas en esta sección</p>
+      </div>
+
+      <div class="d-flex flex-column gap-3">
+        <div
+          *ngFor="let cita of subViewCitas === 'activas' ? citasActivas() : citasHistorial()"
+          class="bf-cita-card-admin"
+          [class.bf-cita-card-admin--pendiente]="cita.estado === 'pendiente'"
+        >
+          <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+            <span class="bf-list-hora">{{ cita.fecha_hora | date: 'dd/MM/yyyy HH:mm' }}</span>
+            <span
+              class="chip"
+              [class.chip-pendiente]="cita.estado === 'pendiente'"
+              [class.chip-confirmada]="cita.estado === 'confirmada'"
+              [class.chip-completada]="cita.estado === 'completada'"
+              [class.chip-cancelada]="cita.estado === 'cancelada'"
+              >{{ cita.estado }}</span
+            >
+          </div>
+          <p class="bf-list-nombre mb-1">
+            <strong>Cliente:</strong> {{ cita.cliente_nombre || 'Usuario ' + cita.usuarios_id }}
+          </p>
+          <p class="bf-list-meta mb-3">{{ cita.barbero_nombre }} — {{ cita.servicio_nombre }}</p>
+
+          <div *ngIf="subViewCitas === 'activas'" class="d-flex gap-2 flex-wrap">
+            <button
+              *ngIf="cita.estado === 'pendiente'"
+              (click)="cambiarEstadoCita(cita.id, 'confirmada')"
+              class="btn-action-confirm btn-bf-sm"
+            >
+              Confirmar
+            </button>
+            <button
+              *ngIf="cita.estado === 'pendiente'"
+              (click)="cambiarEstadoCita(cita.id, 'cancelada')"
+              class="btn-action-cancel btn-bf-sm"
+            >
+              Rechazar
+            </button>
+            <button
+              *ngIf="cita.estado === 'confirmada'"
+              (click)="cambiarEstadoCita(cita.id, 'completada')"
+              class="btn-action-complete btn-bf-sm"
+            >
+              Completada
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WALK-INS -->
+    <section *ngIf="view === 'walkins'" class="admin-section-fade">
+      <div class="bf-subtabs mb-3">
+        <button
+          (click)="subViewWalkins = 'cola'"
+          [class.bf-subtab--active]="subViewWalkins === 'cola'"
+          class="bf-subtab"
+        >
+          En Cola
+        </button>
+        <button
+          (click)="subViewWalkins = 'historial'"
+          [class.bf-subtab--active]="subViewWalkins === 'historial'"
+          class="bf-subtab"
+        >
+          Historial
+        </button>
+      </div>
+
+      <div
+        *ngIf="(subViewWalkins === 'cola' ? walkinsEnCola() : walkinsHistorial()).length === 0"
+        class="bf-empty"
+      >
+        <p>No hay nadie en esta lista</p>
+      </div>
+
+      <div class="d-flex flex-column gap-3">
+        <div
+          *ngFor="let w of subViewWalkins === 'cola' ? walkinsEnCola() : walkinsHistorial()"
+          class="bf-walkin-card"
+          [class.bf-walkin-card--esperando]="w.estado === 'esperando'"
+          [class.bf-walkin-card--atendiendo]="w.estado === 'atendiendo'"
+        >
+          <div class="bf-walkin-info">
+            <strong class="bf-walkin-nombre">{{ w.nombre }}</strong>
+            <small class="bf-walkin-hora"
+              >Llegada: {{ w.hora_llegada || w.fecha_llegada | date: 'HH:mm' }}h</small
+            >
+            <small class="bf-list-meta">Barbero: {{ w.barbero_nombre || 'Cualquiera' }}</small>
+            <span
+              class="chip mt-1"
+              [class.chip-esperando]="w.estado === 'esperando'"
+              [class.chip-atendiendo]="w.estado === 'atendiendo'"
+              [class.chip-completado]="w.estado === 'completado'"
+              [class.chip-cancelado]="w.estado === 'cancelado'"
+              >{{ w.estado }}</span
+            >
+          </div>
+          <div *ngIf="subViewWalkins === 'cola'" class="bf-walkin-actions">
+            <button
+              *ngIf="w.estado === 'esperando'"
+              (click)="cambiarEstadoWalkin(w.id, 'atendiendo')"
+              class="btn-action-atender btn-bf-sm"
+            >
+              Atender
+            </button>
+            <button
+              *ngIf="w.estado === 'atendiendo'"
+              (click)="cambiarEstadoWalkin(w.id, 'completado')"
+              class="btn-action-complete btn-bf-sm"
+            >
+              Finalizar
+            </button>
+            <button
+              *ngIf="w.estado === 'esperando'"
+              (click)="cambiarEstadoWalkin(w.id, 'cancelado')"
+              class="btn-action-cancel btn-bf-sm"
+            >
+              Se marchó
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

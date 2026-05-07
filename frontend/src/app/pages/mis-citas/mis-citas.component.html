@@ -1,0 +1,224 @@
+<!-- HEADER -->
+<div class="bf-page-header">
+  <div>
+    <h1 style="font-size: 24px; margin: 0">Mis Citas</h1>
+    <span style="font-size: 12px; color: var(--bf-muted)" *ngIf="!isLoading()">
+      {{ citas().length }} {{ citas().length === 1 ? 'cita' : 'citas' }}
+    </span>
+  </div>
+  <!-- Agrupamos los dos botones usando flexbox y un gap para separarlos -->
+  <div class="d-flex gap-2" *ngIf="!isLoading()">
+    <button routerLink="/reserva" class="btn-bf-primary btn-bf-sm" aria-label="Nueva cita">
+      + Nueva
+    </button>
+    <button (click)="cerrarSesion()" class="btn-bf-danger btn-bf-sm" aria-label="Cerrar sesión">
+      Salir
+    </button>
+  </div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="bf-main">
+  <!-- Loading -->
+  <div *ngIf="isLoading()" class="bf-empty" role="status" aria-live="polite">
+    <div class="bf-spinner"></div>
+  </div>
+
+  <!-- TABS -->
+  <div *ngIf="!isLoading() && citas().length > 0" class="bf-tabs">
+    <button
+      class="bf-tab"
+      [class.active]="vistaActiva === 'activas'"
+      (click)="vistaActiva = 'activas'"
+    >
+      Próximas
+      <span class="bf-tab-badge" *ngIf="citasActivas().length > 0">{{
+        citasActivas().length
+      }}</span>
+    </button>
+    <button
+      class="bf-tab"
+      [class.active]="vistaActiva === 'historial'"
+      (click)="vistaActiva = 'historial'"
+    >
+      Historial
+    </button>
+  </div>
+
+  <!-- VACÍO GLOBAL -->
+  <div *ngIf="!isLoading() && citas().length === 0" class="bf-empty">
+    <h3>Aún no tienes citas</h3>
+    <p>Reserva tu primera cita</p>
+    <button routerLink="/reserva" class="btn-bf-primary" style="max-width: 200px">
+      Reservar ahora
+    </button>
+  </div>
+
+  <!-- VACÍO PRÓXIMAS -->
+  <div
+    *ngIf="
+      !isLoading() && citas().length > 0 && vistaActiva === 'activas' && citasActivas().length === 0
+    "
+    class="bf-empty"
+  >
+    <h3>Sin citas próximas</h3>
+    <p>No tienes citas pendientes o confirmadas</p>
+    <button routerLink="/reserva" class="btn-bf-primary" style="max-width: 200px">
+      Reservar ahora
+    </button>
+  </div>
+
+  <!-- VACÍO HISTORIAL -->
+  <div
+    *ngIf="
+      !isLoading() &&
+      citas().length > 0 &&
+      vistaActiva === 'historial' &&
+      citasHistorial().length === 0
+    "
+    class="bf-empty"
+  >
+    <h3>Historial vacío</h3>
+    <p>Aquí aparecerán tus citas completadas y canceladas</p>
+  </div>
+
+  <!-- LISTA ACTIVAS -->
+  <div *ngIf="!isLoading() && vistaActiva === 'activas' && citasActivas().length > 0">
+    <div class="bf-card" *ngFor="let cita of citasActivas()">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span [ngClass]="['chip', getEstadoClass(cita.estado)]">
+          {{ cita.estado | titlecase }}
+        </span>
+        <span style="font-size: 13px; color: var(--bf-muted)">
+          {{ cita.fecha_hora | date: 'EEE d MMM · HH:mm' }}
+        </span>
+      </div>
+      <p
+        style="
+          font-family: var(--font-display);
+          font-size: 17px;
+          font-weight: 600;
+          margin: 0 0 4px;
+          color: var(--bf-navy);
+        "
+      >
+        {{ cita.barbero_nombre }}
+      </p>
+      <div class="d-flex justify-content-between align-items-center mb-1">
+        <span style="font-size: 14px; color: var(--bf-muted)">{{ cita.servicio_nombre }}</span>
+        <span style="font-size: 16px; font-weight: 700; color: var(--bf-red)">{{
+          cita.precio | currency: 'EUR'
+        }}</span>
+      </div>
+      <p style="font-size: 12px; color: var(--bf-placeholder); margin: 0 0 12px">
+        {{ cita.duracion }} min
+      </p>
+      <!-- Botón trigger del modal Bootstrap -->
+      <button
+        *ngIf="cita.estado === 'pendiente'"
+        (click)="pedirConfirmacion(cita.id)"
+        data-bs-toggle="modal"
+        data-bs-target="#modalCancelarCita"
+        class="btn-bf-danger btn-bf-sm"
+        style="width: 100%"
+      >
+        Cancelar cita
+      </button>
+    </div>
+  </div>
+
+  <!-- LISTA HISTORIAL -->
+  <div *ngIf="!isLoading() && vistaActiva === 'historial' && citasHistorial().length > 0">
+    <div
+      class="bf-card"
+      [style.opacity]="cita.estado === 'cancelada' ? '0.65' : '1'"
+      *ngFor="let cita of citasHistorial()"
+    >
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <span [ngClass]="['chip', getEstadoClass(cita.estado)]">
+          {{ cita.estado | titlecase }}
+        </span>
+        <span style="font-size: 13px; color: var(--bf-muted)">
+          {{ cita.fecha_hora | date: 'EEE d MMM · HH:mm' }}
+        </span>
+      </div>
+      <p
+        style="
+          font-family: var(--font-display);
+          font-size: 17px;
+          font-weight: 600;
+          margin: 0 0 4px;
+          color: var(--bf-navy);
+        "
+      >
+        {{ cita.barbero_nombre }}
+      </p>
+      <div class="d-flex justify-content-between align-items-center">
+        <span style="font-size: 14px; color: var(--bf-muted)">{{ cita.servicio_nombre }}</span>
+        <span style="font-size: 16px; font-weight: 700; color: var(--bf-red)">{{
+          cita.precio | currency: 'EUR'
+        }}</span>
+      </div>
+      <p style="font-size: 12px; color: var(--bf-placeholder); margin: 4px 0 0">
+        {{ cita.duracion }} min
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CANCELACIÓN -->
+<div
+  class="modal fade"
+  id="modalCancelarCita"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="modalCancelarLabel"
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header" style="border-bottom: 1px solid var(--bf-border)">
+        <h5
+          class="modal-title"
+          id="modalCancelarLabel"
+          style="font-family: var(--font-display); color: var(--bf-navy); font-size: 18px"
+        >
+          ¿Cancelar reserva?
+        </h5>
+        <!-- El X limpia el Signal además de cerrar el modal -->
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="modal"
+          aria-label="Cerrar"
+          (click)="cerrarModal()"
+        ></button>
+      </div>
+
+      <div class="modal-body" style="color: var(--bf-muted); font-size: 15px">
+        Esta acción no se puede deshacer y perderás tu turno
+      </div>
+
+      <div class="modal-footer" style="border-top: 1px solid var(--bf-border)">
+        <button
+          type="button"
+          class="btn-bf-secondary btn-bf-sm"
+          data-bs-dismiss="modal"
+          (click)="cerrarModal()"
+        >
+          Volver
+        </button>
+        <button
+          type="button"
+          class="btn-bf-primary btn-bf-sm"
+          style="background: var(--bf-red); color: #fff"
+          data-bs-dismiss="modal"
+          (click)="cancelarCita()"
+        >
+          Sí, cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

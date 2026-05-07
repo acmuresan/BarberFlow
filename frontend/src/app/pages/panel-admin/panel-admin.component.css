@@ -1,0 +1,299 @@
+.bf-admin {
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: var(--bf-bg);
+}
+
+/* Sección animación */
+.admin-section-fade {
+  animation: fadeIn 0.25s ease;
+}
+
+/* Stat cards (dashboard) */
+.bf-stat-card {
+  background: var(--bf-white);
+  border-radius: var(--bf-radius-card);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.bf-stat-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--bf-muted);
+  margin: 0 0 6px;
+}
+
+.bf-stat-num {
+  font-family: var(--font-display);
+  font-size: 38px;
+  font-weight: 700;
+  color: var(--bf-text);
+  margin: 0;
+  line-height: 1;
+}
+
+.bf-stat-icon {
+  font-size: 32px;
+  opacity: 0.3;
+}
+
+/* Card de sección */
+.bf-card-title {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--bf-navy);
+  margin: 0;
+}
+
+/* Lista scrollable (dashboard) */
+.admin-scroll-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 340px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Item de lista — sin colores laterales */
+.bf-list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: var(--bf-bg);
+  border-radius: var(--bf-radius-btn);
+  gap: 8px;
+}
+
+/* Opacidad para completadas — el estado lo comunica el chip */
+.bf-list-item--completada {
+  opacity: 0.7;
+}
+
+.bf-list-hora {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--bf-navy);
+  font-family: var(--font-display);
+}
+
+.bf-list-nombre {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--bf-text);
+}
+
+.bf-list-meta {
+  font-size: 12px;
+  color: var(--bf-muted);
+}
+
+/* Fila de entidad (barbero / servicio) */
+.bf-entity-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bf-white);
+  border-radius: var(--bf-radius-card);
+  padding: 14px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  gap: 12px;
+}
+
+.bf-entity-nombre {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--bf-text);
+}
+
+.bf-entity-nombre--inactivo {
+  text-decoration: line-through;
+  color: var(--bf-muted);
+}
+
+.bf-badge-baja {
+  font-size: 11px;
+  background: var(--bf-error-bg);
+  color: var(--bf-error);
+  border-radius: 20px;
+  padding: 2px 8px;
+  font-weight: 700;
+}
+
+/* Botones link / acción inline */
+.btn-bf-link {
+  background: none;
+  border: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bf-info);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background 0.15s;
+}
+
+.btn-bf-link:hover {
+  background: var(--bf-info-bg);
+}
+
+.bf-link-danger {
+  color: var(--bf-error) !important;
+}
+.bf-link-danger:hover {
+  background: var(--bf-error-bg) !important;
+}
+.bf-link-warning {
+  color: var(--bf-warning) !important;
+}
+.bf-link-success {
+  color: var(--bf-success) !important;
+}
+
+/* Cita card admin — sin borde lateral de color */
+.bf-cita-card-admin {
+  background: var(--bf-white);
+  border-radius: var(--bf-radius-card);
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Sub-tabs */
+.bf-subtabs {
+  display: flex;
+  border-bottom: 2px solid var(--bf-border);
+}
+
+.bf-subtab {
+  flex: 1;
+  padding: 8px 16px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--bf-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.bf-subtab--active {
+  color: var(--bf-red);
+  border-bottom-color: var(--bf-red);
+  font-weight: 700;
+}
+
+/* Botones de acción */
+.btn-action-confirm,
+.btn-action-cancel,
+.btn-action-complete,
+.btn-action-atender {
+  padding: 0 14px;
+  height: 36px;
+  border: none;
+  border-radius: var(--bf-radius-btn);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-action-confirm {
+  background: var(--bf-info-bg);
+  color: var(--bf-info);
+}
+.btn-action-cancel {
+  background: var(--bf-error-bg);
+  color: var(--bf-error);
+}
+.btn-action-complete {
+  background: var(--bf-success-bg);
+  color: var(--bf-success);
+}
+.btn-action-atender {
+  background: #faf5ff;
+  color: #7e22ce;
+}
+
+.btn-action-confirm:hover,
+.btn-action-cancel:hover,
+.btn-action-complete:hover,
+.btn-action-atender:hover {
+  opacity: 0.8;
+}
+
+/* Walk-in card — sin colores laterales */
+.bf-walkin-card {
+  background: var(--bf-white);
+  border-radius: var(--bf-radius-card);
+  padding: 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Opacidad para historial — estado comunicado por el chip */
+.bf-walkin-card--historial {
+  opacity: 0.7;
+}
+
+.bf-walkin-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bf-walkin-nombre {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--bf-text);
+}
+
+.bf-walkin-hora {
+  font-size: 12px;
+  color: var(--bf-muted);
+}
+
+.bf-walkin-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  .bf-walkin-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .bf-walkin-actions {
+    width: 100%;
+  }
+  .btn-action-atender,
+  .btn-action-complete,
+  .btn-action-cancel {
+    flex: 1;
+    justify-content: center;
+  }
+}
