@@ -98,7 +98,7 @@ export const login = async (req: Request, res: Response) => {
         barbero_id,
       },
       process.env.JWT_SECRET as string,
-      { expiresIn: "365d" },
+      { expiresIn: "8h" },
     );
 
     res.status(200).json({
