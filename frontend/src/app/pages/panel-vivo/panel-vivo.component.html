@@ -13,7 +13,11 @@
     </div>
     <div class="d-flex align-items-center gap-2">
       <!-- Volver al panel de gestión, solo visible para admin/barbero que hayan navegado aquí desde su panel -->
-      <a routerLink="/panel-barbero" class="pv-equipo-btn" aria-label="Volver al panel de barbero">
+      <a
+        [routerLink]="panelDeVuelta()"
+        class="pv-equipo-btn"
+        aria-label="Volver al panel de barbero"
+      >
         Mi panel
       </a>
       <a routerLink="/login" class="pv-equipo-btn" aria-label="Volver al inicio de sesión">
