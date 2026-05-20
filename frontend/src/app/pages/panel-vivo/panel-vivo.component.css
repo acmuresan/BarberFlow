@@ -132,6 +132,20 @@
   gap: 12px;
 }
 
+.pv-queue-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.pv-queue-barbero {
+  font-size: 12px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.5);
+  white-space: nowrap;
+}
+
 .pv-queue-time {
   font-size: 14px;
   font-weight: 700;

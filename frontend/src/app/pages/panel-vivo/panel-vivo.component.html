@@ -70,22 +70,27 @@
       <div *ngFor="let cita of panelData().proximas_citas" class="pv-queue-item">
         <div class="pv-queue-info">
           <span class="pv-queue-time">{{ cita.fecha_hora | date: 'HH:mm' }}</span>
-          <span class="pv-queue-name">{{ cita.usuario_nombre }}</span>
+          <span class="pv-queue-name">{{ cita.nombre_cliente }}</span>
         </div>
-        <span class="pv-queue-type">Cita</span>
+        <div class="pv-queue-right">
+          <span class="pv-queue-barbero">
+            {{ cita.nombre_barbero }}
+          </span>
+          <span class="pv-queue-type">Cita</span>
+        </div>
       </div>
 
       <!-- Walk-ins solo en estado 'esperando' -->
       <div *ngFor="let w of walkinsEnEspera()" class="pv-queue-item">
         <div class="pv-queue-info">
-          <!-- Bug fix: paréntesis alrededor del || para que date pipe
-               aplique al resultado completo y no solo a fecha_llegada -->
           <span class="pv-queue-time">
             {{ w.hora_llegada || w.fecha_llegada | date: 'HH:mm' }}
           </span>
           <span class="pv-queue-name">{{ w.nombre }}</span>
         </div>
-        <span class="pv-queue-type pv-queue-walkin">Walk-in</span>
+        <div class="pv-queue-right">
+          <span class="pv-queue-type pv-queue-walkin">Walk-in</span>
+        </div>
       </div>
     </div>
 
