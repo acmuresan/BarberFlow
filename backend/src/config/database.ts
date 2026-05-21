@@ -16,7 +16,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,
   queueLimit: 0,
 
-  timezone: "+00:00", // fechas en UTC para evitar problemas de zona horaria
+  timezone: "local", // fechas en UTC para evitar problemas de zona horaria
 });
 
 // Verificamos la conexion al arrancar. Si falla, paramos el servidor

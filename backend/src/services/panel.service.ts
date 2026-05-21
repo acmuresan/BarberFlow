@@ -40,10 +40,13 @@ export async function calcularTiempoEspera(
     const [mediaResult] = await pool.execute<RowDataPacket[]>(
       "SELECT AVG(duracion) as duracion_media FROM servicios",
     );
+
     const media = mediaResult[0];
+
     if (media.duracion_media !== null) {
       return totalPersonas * media.duracion_media;
     }
+
     return null;
   } catch (error) {
     // Devolvemos null para no romper el endpoint
@@ -64,8 +67,8 @@ export async function getPanel(): Promise<
   | { error: string; status: number }
 > {
   try {
-    // Solo citas en curso ahora mismo
-    //
+    // Decision: solo citas en curso ahora mismo (NOW entre fecha_hora y fecha_hora_fin)
+    // No contamos citas futuras porque no afectan al estado actual de la barberia
     const [
       citasActivasResult,
       walkinsEsperaResult,
@@ -121,7 +124,7 @@ export async function getPanelPublico(): Promise<
   | { error: string; status: number }
 > {
   try {
-    // Mismo criterio que el panel privado, solo citas en curso ahora mismo
+    // Decision: mismo criterio que el panel privado, solo citas en curso ahora mismo
     const [citasActivasResult, walkinsEsperaResult] = await Promise.all([
       pool.execute<CountRow[]>(
         "SELECT COUNT(*) as total FROM citas WHERE estado IN (?, ?) AND NOW() >= fecha_hora AND NOW() <= fecha_hora_fin",
@@ -137,6 +140,7 @@ export async function getPanelPublico(): Promise<
     const walkinsEspera = walkinsEsperaResult[0];
     const total_personas = citasActivas[0].total + walkinsEspera[0].total;
 
+    // total_personas es la suma de los dos COUNTs
     return {
       total_personas: citasActivas[0].total + walkinsEspera[0].total,
       tiempo_espera_estimado_min: await calcularTiempoEspera(total_personas),
