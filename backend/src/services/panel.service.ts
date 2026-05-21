@@ -27,7 +27,7 @@ interface WalkinRow extends RowDataPacket {
   barberos_id: number;
 }
 
-// Tipamos el resultado de COUN
+// Tipamos el resultado de COUNT
 interface CountRow extends RowDataPacket {
   total: number;
 }
@@ -40,13 +40,10 @@ export async function calcularTiempoEspera(
     const [mediaResult] = await pool.execute<RowDataPacket[]>(
       "SELECT AVG(duracion) as duracion_media FROM servicios",
     );
-
     const media = mediaResult[0];
-
     if (media.duracion_media !== null) {
       return totalPersonas * media.duracion_media;
     }
-
     return null;
   } catch (error) {
     // Devolvemos null para no romper el endpoint
@@ -67,7 +64,8 @@ export async function getPanel(): Promise<
   | { error: string; status: number }
 > {
   try {
-    // Lanzamos las 5 queries en paralelo
+    // Solo citas en curso ahora mismo
+    //
     const [
       citasActivasResult,
       walkinsEsperaResult,
@@ -76,7 +74,7 @@ export async function getPanel(): Promise<
       walkinsColaResult,
     ] = await Promise.all([
       pool.execute<CountRow[]>(
-        "SELECT COUNT(*) as total FROM citas WHERE DATE(fecha_hora) = CURDATE() AND estado IN (?, ?)",
+        "SELECT COUNT(*) as total FROM citas WHERE estado IN (?, ?) AND NOW() >= fecha_hora AND NOW() <= fecha_hora_fin",
         ["pendiente", "confirmada"],
       ),
       pool.execute<CountRow[]>(
@@ -87,13 +85,7 @@ export async function getPanel(): Promise<
         "SELECT id, nombre FROM barberos WHERE activo = 1",
       ),
       pool.execute<CitaPanelRow[]>(
-        `SELECT c.id, c.fecha_hora, c.fecha_hora_fin, c.estado, c.servicios_id,
-    u.nombre AS nombre_cliente, b.nombre AS nombre_barbero
-    FROM citas c
-    JOIN usuarios u ON c.usuarios_id = u.id
-    JOIN barberos b ON c.barberos_id = b.id
-    WHERE DATE(c.fecha_hora) = CURDATE()
-    AND c.estado IN (?, ?)`,
+        "SELECT c.id, c.fecha_hora, c.fecha_hora_fin, c.estado, c.servicios_id, u.nombre AS nombre_cliente, b.nombre AS nombre_barbero FROM citas c JOIN usuarios u ON c.usuarios_id = u.id JOIN barberos b ON c.barberos_id = b.id WHERE c.estado IN (?, ?) AND NOW() >= c.fecha_hora AND NOW() <= c.fecha_hora_fin",
         ["pendiente", "confirmada"],
       ),
       pool.execute<WalkinRow[]>(
@@ -129,9 +121,10 @@ export async function getPanelPublico(): Promise<
   | { error: string; status: number }
 > {
   try {
+    // Mismo criterio que el panel privado, solo citas en curso ahora mismo
     const [citasActivasResult, walkinsEsperaResult] = await Promise.all([
       pool.execute<CountRow[]>(
-        "SELECT COUNT(*) as total FROM citas WHERE DATE(fecha_hora) = CURDATE() AND estado IN (?, ?)",
+        "SELECT COUNT(*) as total FROM citas WHERE estado IN (?, ?) AND NOW() >= fecha_hora AND NOW() <= fecha_hora_fin",
         ["pendiente", "confirmada"],
       ),
       pool.execute<CountRow[]>(
@@ -144,7 +137,6 @@ export async function getPanelPublico(): Promise<
     const walkinsEspera = walkinsEsperaResult[0];
     const total_personas = citasActivas[0].total + walkinsEspera[0].total;
 
-    // total_personas es la suma de los dos COUNTs
     return {
       total_personas: citasActivas[0].total + walkinsEspera[0].total,
       tiempo_espera_estimado_min: await calcularTiempoEspera(total_personas),
