@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { PanelService } from '../../core/services/panel.service';
 import { FeedbackService } from '../../core/services/feedback.service';
+import { AuthService } from '../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-panel-vivo',
@@ -14,6 +15,7 @@ import { FeedbackService } from '../../core/services/feedback.service';
 export class PanelVivoComponent implements OnInit, OnDestroy {
   private panelService = inject(PanelService);
   private feedback = inject(FeedbackService);
+  private authService = inject(AuthService);
 
   private readonly POLLING_INTERVAL = 30000;
   private intervalId: any;
@@ -21,6 +23,22 @@ export class PanelVivoComponent implements OnInit, OnDestroy {
   public panelData = signal<any>(null);
   public loading = signal<boolean>(true);
   public lastUpdate = signal<Date>(new Date());
+
+  //La ruta de vuelta se calcula según el rol del usuario logueado
+  panelDeVuelta = computed(() => {
+    const user = this.authService.currentUser();
+    if (user?.rol === 'admin') return '/panel-admin';
+    if (user?.rol === 'barbero') return '/panel-barbero';
+    return;
+  });
+
+  // Etiqueta del botón de vuelta
+  labelDeVuelta = computed(() => {
+    const user = this.authService.currentUser();
+    if (user?.rol === 'admin') return 'Panel Admin';
+    if (user?.rol === 'barbero') return 'Mi panel';
+    return;
+  });
 
   tiempoRedondeado = computed(() => {
     const val = this.panelData()?.tiempo_espera_estimado_min;
